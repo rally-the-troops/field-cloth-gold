@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="41" height="44">
+<linearGradient id="g">
+<stop offset="0%" stop-color="hsl(220,85%,40%)"/>
+<stop offset="20%" stop-color="hsl(220,85%,50%)"/>
+<stop offset="50%" stop-color="hsl(220,85%,53%)"/>
+<stop offset="80%" stop-color="hsl(220,85%,50%)"/>
+<stop offset="100%" stop-color="hsl(220,85%,40%)"/>
+</linearGradient>
+<path stroke-width="1" fill="url(#g)" stroke="hsl(220,85%,25%)" d="M 1.5 14 v 16 a 19 12.5 0 0 0 38 0 v -16"/>
+<ellipse stroke-width="1" fill="hsl(220,85%,55%)" stroke="hsl(220,85%,25%)" cx="20.5" cy="14" rx="19" ry="12.5"/>
+</svg>
