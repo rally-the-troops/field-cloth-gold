@@ -18,15 +18,22 @@ main { background-color: dimgray }
 #role_Blue .role_name { background-color: skyblue; }
 
 #mapwrap {
-	width: 1100px;
-	height: 850px;
+	width: 1104px;
+	height: 854px;
 	box-shadow: 0px 1px 10px #0008;
+	margin: 12px auto;
 }
 
 #map {
 	width: 1100px;
 	height: 850px;
-	background-image: url(map100.png);
+	background-size: 1100px 850px;
+	background-image: url(map100.jpg);
+	border: 2px solid #333;
+}
+
+@media (min-resolution: 97dpi) {
+	#map { background-image: url(map200.jpg) }
 }
 
 #map div {
@@ -72,9 +79,17 @@ main { background-color: dimgray }
 
 .panel {
 	max-width: 1100px;
-	margin: 36px auto;
+	margin: 24px auto;
 	background-color: #555;
+	border: 2px solid #333;
+	box-shadow: 0 1px 10px #0008;
 }
+
+#red_court_header { background-color: #644 }
+#red_court { background-color: #655 }
+
+#blue_court_header { background-color: #446 }
+#blue_court { background-color: #556 }
 
 .panel_header {
 	background-color: #444;
@@ -89,8 +104,9 @@ main { background-color: dimgray }
 	display: flex;
 	justify-content: start;
 	flex-wrap: wrap;
-	padding: 20px;
-	gap: 20px;
+	padding: 16px;
+	gap: 16px;
+	min-height: 80px;
 }
 
 </style>
@@ -150,15 +166,18 @@ main { background-color: dimgray }
 <div id="hand_panel" class="panel">
 <div id="hand_header" class="panel_header">Hand</div>
 <div id="hand" class="panel_body">
-
-<div class="tile red" style="left:198px;top:300px"></div>
-<div class="tile blue" style="left:338px;top:300px"></div>
-<div class="tile green" style="left:478px;top:300px"></div>
-<div class="tile white" style="left:618px;top:300px"></div>
-<div class="tile gold" style="left:758px;top:300px"></div>
-
 </div>
 </div>
+
+<div id="red_court_panel" class="panel">
+<div id="red_court_header" class="panel_header">Red Court</div>
+<div id="red_court" class="panel_body">
+</div></div>
+
+<div id="blue_court_panel" class="panel">
+<div id="blue_court_header" class="panel_header">Blue Court</div>
+<div id="blue_court" class="panel_body">
+</div></div>
 
 </main>
 
