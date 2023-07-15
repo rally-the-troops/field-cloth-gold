@@ -66,7 +66,8 @@ const LAYOUT_SCORE_39 = [748,547,46,46]
 const SCORE_X0 = LAYOUT_SCORE_0[0] + TOKEN_DX + BOARD_X
 const SCORE_Y0 = LAYOUT_SCORE_0[1] + TOKEN_DY + BOARD_Y
 const SCORE_DX = (LAYOUT_SCORE_39[0] - LAYOUT_SCORE_0[0] + 4) / 7
-const SCORE_DY = (LAYOUT_SCORE_39[1] - LAYOUT_SCORE_0[1] + 0) / 4
+const SCORE_DY = (LAYOUT_SCORE_39[1] - LAYOUT_SCORE_0[1]) / 4
+const SCORE_DXDY = -1
 
 let ui = {
 	board: document.getElementById("map"),
@@ -265,8 +266,8 @@ function on_update() {
 	let rs_y = rs >> 3
 	let bs_y = bs >> 3
 
-	ui.red_score.style.left = (SCORE_X0 + SCORE_DX * rs_x) + "px"
-	ui.blue_score.style.left = (SCORE_X0 + SCORE_DX * bs_x) + "px"
+	ui.red_score.style.left = (SCORE_X0 + SCORE_DX * rs_x + SCORE_DXDY * rs_y) + "px"
+	ui.blue_score.style.left = (SCORE_X0 + SCORE_DX * bs_x + SCORE_DXDY * bs_y) + "px"
 	if (rs === bs) {
 		ui.red_score.style.top = (SCORE_Y0 + SCORE_DY * rs_y - 21) + "px"
 		ui.blue_score.style.top = (SCORE_Y0 + SCORE_DY * bs_y + 8) + "px"
