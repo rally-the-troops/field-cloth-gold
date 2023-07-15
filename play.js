@@ -33,40 +33,40 @@ const TILE_DX = 3
 const TILE_DY = 3
 
 const LAYOUT_OVAL = [
-	[156,165,45,45],
-	[262,165,45,45],
-	[369,165,45,45],
-	[475,165,45,45],
-	[582,165,45,45],
-	[688,165,45,45],
-	[66,164,45,45],
+	[156,165,46,46],
+	[262,165,46,46],
+	[369,165,46,46],
+	[475,165,46,46],
+	[582,165,46,46],
+	[688,165,46,46],
+	[66,164,46,46],
 
 	// dragon at home
-	[66,105,46,45],
+	[67,106,46,46],
 
 	// off-board
-	[75,400,62,62],
-	[175,400,62,62],
-	[50,500,62,62],
-	[150,500,62,62],
+	[10,638-50],
+	[110,638-50],
+	[60,638-50],
+	[160,638-50],
 ]
 
 const LAYOUT_SQUARE = [
-	[147,224,61,61],
-	[253,224,61,61],
-	[360,225,61,61],
-	[466,225,61,61],
-	[573,225,61,61],
-	[679,225,61,61],
+	[147,224,62,62],
+	[253,224,62,62],
+	[360,225,62,62],
+	[466,225,62,62],
+	[573,225,62,62],
+	[679,225,62,62],
 ]
 
-const LAYOUT_SCORE_0 = [358,332,45,45]
-const LAYOUT_SCORE_39 = [748,547,45,45]
+const LAYOUT_SCORE_0 = [358,332,46,46]
+const LAYOUT_SCORE_39 = [748,547,46,46]
 
 const SCORE_X0 = LAYOUT_SCORE_0[0] + TOKEN_DX + BOARD_X
 const SCORE_Y0 = LAYOUT_SCORE_0[1] + TOKEN_DY + BOARD_Y
-const SCORE_DX = (LAYOUT_SCORE_39[0] - LAYOUT_SCORE_0[0]) / 7
-const SCORE_DY = (LAYOUT_SCORE_39[1] - LAYOUT_SCORE_0[1]) / 4
+const SCORE_DX = (LAYOUT_SCORE_39[0] - LAYOUT_SCORE_0[0] + 4) / 7
+const SCORE_DY = (LAYOUT_SCORE_39[1] - LAYOUT_SCORE_0[1] + 0) / 4
 
 let ui = {
 	board: document.getElementById("map"),
@@ -75,6 +75,7 @@ let ui = {
 	red_score: null,
 	blue_score: null,
 	oval_spaces: [],
+	square_spaces: [],
 	tokens: [],
 	tiles: [ null ],
 }
@@ -127,7 +128,7 @@ function on_init() {
 		return
 	on_init_once = true
 
-	for (let i = 0; i < 7; ++i) {
+	for (let i = 0; i < 8; ++i) {
 		ui.oval_spaces[i] = create("div", { className: "oval space", my_action: "space", my_id: i })
 		ui.oval_spaces[i].style.left = (BOARD_X + LAYOUT_OVAL[i][0]) + "px"
 		ui.oval_spaces[i].style.top = (BOARD_Y + LAYOUT_OVAL[i][1]) + "px"
@@ -136,8 +137,17 @@ function on_init() {
 		ui.board.append(ui.oval_spaces[i])
 	}
 
-	ui.red_score = create_token({ className: "token red" })
-	ui.blue_score = create_token({ className: "token blue" })
+	for (let i = 0; i < 6; ++i) {
+		ui.square_spaces[i] = create("div", { className: "square space", my_action: "square", my_id: i })
+		ui.square_spaces[i].style.left = (BOARD_X + LAYOUT_SQUARE[i][0]) + "px"
+		ui.square_spaces[i].style.top = (BOARD_Y + LAYOUT_SQUARE[i][1]) + "px"
+		ui.square_spaces[i].style.width = LAYOUT_SQUARE[i][2] + "px"
+		ui.square_spaces[i].style.height = LAYOUT_SQUARE[i][3] + "px"
+		ui.board.append(ui.square_spaces[i])
+	}
+
+	ui.red_score = create_token({ className: "token red", my_action: "score", my_id: 1 })
+	ui.blue_score = create_token({ className: "token blue", my_action: "score", my_id: 2 })
 
 	ui.tokens[0] = create_token({ className: "token white", my_action: "token", my_id: 0 })
 	ui.tokens[1] = create_token({ className: "token red", my_action: "token", my_id: 1 })
@@ -171,7 +181,7 @@ function on_update() {
 	on_init()
 
 	for (let i = 1; i <= 54; ++i) {
-		if (view.hand.includes(i) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i))
+		if ((view.hand && view.hand.includes(i)) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i))
 			show(ui.tiles[i])
 		else
 			hide(ui.tiles[i])
@@ -196,9 +206,22 @@ function on_update() {
 		ui.tokens[i].classList.toggle("selected", i === view.selected_token)
 	}
 
-	let tile_space = calc_tile_spacing(view.red_court.length)
-	for (let i = 0; i < view.red_court.length; ++i) {
-		let k = view.red_court[i]
+	let court1, court2
+	if (player !== "Blue") {
+		ui.court1.className = "blue court"
+		ui.court2.className = "red court"
+		court1 = view.blue_court
+		court2 = view.red_court
+	} else {
+		ui.court1.className = "red court"
+		ui.court2.className = "blue court"
+		court1 = view.red_court
+		court2 = view.blue_court
+	}
+
+	let tile_space = calc_tile_spacing(court1.length)
+	for (let i = 0; i < court1.length; ++i) {
+		let k = court1[i]
 		let x = COURT1_X + tile_space * i
 		let y = COURT1_Y
 		ui.tiles[k].style.left = x + "px"
@@ -206,9 +229,9 @@ function on_update() {
 		ui.tiles[k].style.zIndex = i
 	}
 
-	tile_space = calc_tile_spacing(view.blue_court.length)
-	for (let i = 0; i < view.blue_court.length; ++i) {
-		let k = view.blue_court[i]
+	tile_space = calc_tile_spacing(court2.length)
+	for (let i = 0; i < court2.length; ++i) {
+		let k = court2[i]
 		let x = COURT2_X + tile_space * i
 		let y = COURT2_Y
 		ui.tiles[k].style.left = x + "px"
@@ -216,14 +239,16 @@ function on_update() {
 		ui.tiles[k].style.zIndex = i
 	}
 
-	tile_space = calc_tile_spacing(view.hand.length)
-	for (let i = 0; i < view.hand.length; ++i) {
-		let k = view.hand[i]
-		let x = HAND_X + tile_space * i
-		let y = HAND_Y
-		ui.tiles[k].style.left = x + "px"
-		ui.tiles[k].style.top = y + "px"
-		ui.tiles[k].style.zIndex = i
+	if (view.hand) {
+		tile_space = calc_tile_spacing(view.hand.length)
+		for (let i = 0; i < view.hand.length; ++i) {
+			let k = view.hand[i]
+			let x = HAND_X + tile_space * i
+			let y = HAND_Y
+			ui.tiles[k].style.left = x + "px"
+			ui.tiles[k].style.top = y + "px"
+			ui.tiles[k].style.zIndex = i
+		}
 	}
 
 	let rs = view.red_score
@@ -246,8 +271,43 @@ function on_update() {
 	for (let e of action_register)
 		e.classList.toggle("action", is_action(e.my_action, e.my_id))
 
+	action_button("darkness", "Darkness")
 	action_button("done", "Done")
 	action_button("undo", "Undo")
+}
+
+function on_log(text) {
+	let p = document.createElement("div")
+	if (text.match(/^\.r /)) {
+		text = text.substring(3)
+		p.className = 'h1 r'
+	}
+	else if (text.match(/^\.b /)) {
+		text = text.substring(3)
+		p.className = 'h1 b'
+	}
+	else if (text.match(/^\.x /)) {
+		text = text.substring(3)
+		p.className = 'h1 x'
+	}
+
+	if (text.match(/^Dragon$/))
+		p.classList.add("dragon")
+	if (text.match(/^Secrecy$/))
+		p.classList.add("secrecy")
+	if (text.match(/^Cloth of Gold$/))
+		p.classList.add("gold")
+	if (text.match(/^Banquets/))
+		p.classList.add("blue")
+	if (text.match(/^Godliness/))
+		p.classList.add("white")
+	if (text.match(/^Tournaments$/))
+		p.classList.add("red")
+	if (text.match(/^Collections$/))
+		p.classList.add("purple")
+
+	p.textContent = text
+	return p
 }
 
 scroll_with_middle_mouse("main")

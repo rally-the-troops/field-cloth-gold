@@ -41,8 +41,8 @@ function rgb_to_hsl(rgb, add=0, scale=1) {
 
 function foo(sel, rgb) {
 	let bg = rgb_to_hsl(rgb, 0.00, 1.00)
-	let hi = rgb_to_hsl(rgb, 0.10, 1.00)
-	let sh = rgb_to_hsl(rgb, -0.10, 1.00)
+	let hi = rgb_to_hsl(rgb, 0.15, 1.00)
+	let sh = rgb_to_hsl(rgb, -0.15, 1.00)
 	let bd = rgb_to_hsl(rgb, 0.00, 0.33)
 	console.log(sel + ` { background-color: ${bg}; border-color: ${hi} ${sh} ${sh} ${hi}; box-shadow: 0 0 0 1px ${bd}, 0px 1px 4px #0008; }`)
 }

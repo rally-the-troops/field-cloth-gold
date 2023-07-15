@@ -11,6 +11,9 @@ exports.scenarios = [ "Standard" ]
 
 exports.roles = [ RED, BLUE ]
 
+const SECRECY_PER_ROW = [ 1, 2, 2, 3, 0 ]
+const GOLD_PER_ROW = [ 3, 3, 2, 1, 1 ]
+
 const TOKEN_DRAGON = 0
 const TOKEN_RED_1 = 1
 const TOKEN_RED_2 = 2
@@ -43,6 +46,59 @@ const TILE_WHITE = 37
 const TILE_GREEN = 49
 const LAST_TILE = 54
 
+const COUNT_NAME = [
+	"no",
+	"one",
+	"two",
+	"three",
+	"four",
+	"five",
+	"six",
+	"seven",
+	"eight",
+	"nine",
+	"ten",
+	"eleven",
+	"twelve",
+]
+
+function count_name(n) {
+	if (n > 12)
+		return String(n)
+	return COUNT_NAME[n]
+}
+
+function space_name(s) {
+	switch (s) {
+	case S_DRAGON_1: return "Dragon"
+	case S_DARKNESS: return "Secrecy"
+	case S_GOLD: return "Cloth of Gold"
+	case S_BLUE: return "Banquets & Feasts"
+	case S_WHITE: return "Godliness & Piety"
+	case S_RED: return "Tournaments"
+	case S_PURPLE: return "Collections"
+	default: return "off board"
+	}
+}
+
+function tile_name(tile) {
+	if (tile >= TILE_BLUE && tile < TILE_BLUE + 12) return "Blue"
+	if (tile >= TILE_RED && tile < TILE_RED + 12) return "Red"
+	if (tile >= TILE_GOLD && tile < TILE_GOLD + 12) return "Gold"
+	if (tile >= TILE_WHITE && tile < TILE_WHITE + 12) return "White"
+	if (tile >= TILE_GREEN && tile < TILE_GREEN + 12) return "Green"
+	return "None"
+}
+
+function tile_type_name(tile) {
+	if (tile >= TILE_BLUE && tile < TILE_BLUE + 12) return "Beasts"
+	if (tile >= TILE_RED && tile < TILE_RED + 12) return "Tournaments"
+	if (tile >= TILE_GOLD && tile < TILE_GOLD + 12) return "Cloth of Gold"
+	if (tile >= TILE_WHITE && tile < TILE_WHITE + 12) return "Piety"
+	if (tile >= TILE_GREEN && tile < TILE_GREEN + 12) return "Jewels"
+	return "None"
+}
+
 function gen_action(action, argument) {
 	if (!(action in view.actions))
 		view.actions[action] = []
@@ -59,6 +115,33 @@ function gen_action_tile(tile) {
 
 function gen_action_space(space) {
 	gen_action("space", space)
+}
+
+function gen_action_square(space) {
+	gen_action("square", space)
+}
+
+function gen_action_score() {
+	if (game.active === RED)
+		gen_action("score", 1)
+	else
+		gen_action("score", 2)
+}
+
+function gen_action_score_rival() {
+	if (game.active !== RED)
+		gen_action("score", 1)
+	else
+		gen_action("score", 2)
+}
+
+function prompt_score(space, score, tail = ".") {
+	if (score === 0)
+		view.prompt = space + ": Score no points" + tail
+	else if (score === 1)
+		view.prompt = space + ": Score one point" + tail
+	else
+		view.prompt = space + ": Score " + score + " points" + tail
 }
 
 exports.action = function (state, player, action, arg) {
@@ -100,7 +183,7 @@ exports.view = function(state, player) {
 		view.prompt = game.victory
 	} else if (player !== game.active) {
 		let inactive = states[game.state].inactive || game.state
-		view.prompt = `Waiting for ${game.active} \u2014 ${inactive}...`
+		view.prompt = `Waiting for ${game.active} \u2014 ${inactive}.`
 	} else {
 		view.actions = {}
 		states[game.state].prompt()
@@ -129,14 +212,12 @@ function goto_game_over(result, victory) {
 	game.active = "None"
 	game.result = result
 	game.victory = victory
-	log_br()
+	log("")
 	log(game.victory)
+	return false
 }
 
 states.game_over = {
-	get inactive() {
-		return game.victory
-	},
 	prompt() {
 		view.prompt = game.victory
 	},
@@ -205,10 +286,22 @@ function own_court() {
 	return game.blue_court
 }
 
+function rival_hand() {
+	if (game.active === RED)
+		return game.blue_hand
+	return game.red_hand
+}
+
 function own_hand() {
 	if (game.active === RED)
 		return game.red_hand
 	return game.blue_hand
+}
+
+function rival_score() {
+	if (game.active === RED)
+		return game.blue_score
+	return game.red_score
 }
 
 function own_score() {
@@ -217,23 +310,47 @@ function own_score() {
 	return game.blue_score
 }
 
+function is_oval_space_empty(s) {
+	for (let i = FIRST_SPACE; i <= LAST_OVAL_SPACE; ++i)
+		if (game.tokens[i] === s)
+			return false
+	return true
+}
+
 function gift_tile_in_space(to) {
 	// Gift associated tile to rival.
 	if (to <= LAST_TILE_SPACE) {
 		let tile = game.squares[to]
-		log("Gifted " + tile)
+		log("Gifted " + tile_name(tile) + ".")
 		game.squares[to] = TILE_NONE
 		rival_court().push(tile)
 	}
 }
 
 function score_own_points(n) {
-	log("Scored " + n)
-	if (game.active === RED)
-		game.red_score += n
-	if (game.active === BLUE)
-		game.blue_score += n
-	return (game.red_score >= 30) || (game.blue_score >= 30)
+	if (n > 0) {
+		if (n === 1)
+			log("Scored " + count_name(n) + " point.")
+		else
+			log("Scored " + count_name(n) + " points.")
+		if (game.active === RED)
+			game.red_score += n
+		if (game.active === BLUE)
+			game.blue_score += n
+	}
+}
+
+function score_rival_points(n) {
+	if (n > 0) {
+		if (n === 1)
+			log("Rival scored " + count_name(n) + " point.")
+		else
+			log("Rival scored " + count_name(n) + " points.")
+		if (game.active === RED)
+			game.blue_score += n
+		if (game.active === BLUE)
+			game.red_score += n
+	}
 }
 
 function count_tiles(list, type) {
@@ -244,44 +361,78 @@ function count_tiles(list, type) {
 	return n
 }
 
-function reveal_tiles_into_court(type) {
-	let hand = own_hand()
-	let court = own_court()
-	for (let i = 0; i < hand.length;) {
-		let tile = hand[i]
-		if (tile >= type && tile < type + 12) {
-			logi("Revealed " + tile)
-			array_remove(hand, i)
-			court.push(tile)
-		} else {
-			++i
-		}
-	}
+function has_tile_in_list(type, list) {
+	for (let tile of list)
+		if (tile >= type && tile < type + 12)
+			return true
+	return false
 }
 
-function remove_tiles_from_court(type) {
-	let court = own_court()
-	for (let i = 0; i < court.length;) {
-		let tile = court[i]
-		if (tile >= type && tile < type + 12) {
-			logi("Removed " + tile)
-			array_remove(court, i)
-		} else {
-			++i
-		}
-	}
+function gen_tile_in_list(type, list) {
+	for (let tile of list)
+		if (tile >= type && tile < type + 12)
+			gen_action_tile(tile)
 }
 
-function is_oval_space_empty(s) {
-	for (let i = FIRST_SPACE; i <= LAST_OVAL_SPACE; ++i)
-		if (game.tokens[i] === s)
-			return false
-	return true
+function log_reveal_tiles_into_court(type) {
+	let n = count_tiles(own_hand(), type)
+	if (n > 0)
+		log("Revealed " + count_name(n) + " " + tile_name(type) + ".")
+}
+
+function log_remove_tiles_from_court(type) {
+	let n = count_tiles(own_court(), type)
+	if (n > 0)
+		log("Removed " + count_name(n) + " " + tile_name(type) + ".")
+}
+
+function log_remove_tiles_from_rival_court(type) {
+	let n = count_tiles(rival_court(), type)
+	if (n > 0)
+		log("Rival removed " + count_name(n) + " " + tile_name(type) + ".")
+}
+
+function can_reveal_tiles_into_court(type) {
+	return has_tile_in_list(type, own_hand())
+}
+
+function gen_reveal_tiles_into_court(type) {
+	gen_tile_in_list(type, own_hand())
+}
+
+function can_remove_tiles_from_court(type) {
+	return has_tile_in_list(type, own_court())
+}
+
+function gen_remove_tiles_from_court(type) {
+	gen_tile_in_list(type, own_court())
+}
+
+function can_remove_tiles_from_rival_court(type) {
+	return has_tile_in_list(type, rival_court())
+}
+
+function gen_remove_tiles_from_rival_courts(type) {
+	gen_tile_in_list(type, rival_court())
+}
+
+function reveal_tile_into_court(tile) {
+	array_remove_item(own_hand(), tile)
+	own_court().push(tile)
+}
+
+function remove_tile_from_court(tile) {
+	array_remove_item(own_court(), tile)
+}
+
+function remove_tile_from_rival_court(tile) {
+	array_remove_item(rival_court(), tile)
 }
 
 // === FLOW OF PLAY ===
 
 states.move_token = {
+	inactive: "to move one of their tokens",
 	prompt() {
 		view.prompt = "Move one of your tokens to an oval space."
 		if (game.active === RED) {
@@ -312,8 +463,9 @@ states.move_token = {
 }
 
 states.move_token_to = {
+	inactive: "to move one of their tokens",
 	prompt() {
-		view.prompt = "Move your token to an oval space."
+		view.prompt = "Move one of your tokens to an oval space."
 		view.selected_token = game.selected_token
 		for (let i = FIRST_SPACE; i <= LAST_OVAL_SPACE; ++i)
 			if (is_oval_space_empty(i))
@@ -324,7 +476,12 @@ states.move_token_to = {
 		// Remember whence we came.
 		game.from = game.tokens[game.selected_token]
 
-		log_h2(game.active + " MOVED TO " + to)
+		if (game.active === RED)
+			log(".r " + space_name(to))
+		else
+			log(".b " + space_name(to))
+
+		log("From " + space_name(game.from) + ".")
 
 		// Move the token.
 		game.tokens[game.selected_token] = to
@@ -334,20 +491,20 @@ states.move_token_to = {
 
 		// Take action.
 		switch (to) {
-			case S_DRAGON_1:
-				return goto_dragon()
-			case S_DARKNESS:
-				return goto_secrecy()
-			case S_GOLD:
-				return goto_cloth_of_gold()
-			case S_BLUE:
-				return goto_banquets_and_feasts()
-			case S_WHITE:
-				return goto_godliness_and_piety()
-			case S_RED:
-				return goto_tournaments()
-			case S_PURPLE:
-				return goto_purple()
+		case S_DRAGON_1:
+			return goto_dragon()
+		case S_DARKNESS:
+			return goto_secrecy()
+		case S_GOLD:
+			return goto_cloth_of_gold()
+		case S_BLUE:
+			return goto_banquets_and_feasts()
+		case S_WHITE:
+			return goto_godliness_and_piety()
+		case S_RED:
+			return goto_tournaments()
+		case S_PURPLE:
+			return goto_collections()
 		}
 	},
 	token(t) {
@@ -355,23 +512,80 @@ states.move_token_to = {
 	},
 }
 
+function is_end_of_the_contest() {
+	if (game.darkness.length === 0)
+		return true
+	if ((game.red_score >= 30) || (game.blue_score >= 30))
+		return true
+	return false
+}
+
+// TODO: manual return dragon
+// TODO: manual refill
+
 function end_turn() {
 	clear_undo()
 
-	// Return Dragon if needed.
-	if (is_oval_space_empty(S_DRAGON_1))
-		game.tokens[TOKEN_DRAGON] = S_DRAGON_2
+	// Game End triggered?
+	if (is_end_of_the_contest())
+		return goto_end_of_the_contest()
 
-	// Refill Tiles if needed.
-	for (let i = FIRST_SPACE; i <= LAST_TILE_SPACE; ++i) {
-		if (is_oval_space_empty(i) && game.squares[i] === 0) {
-			let tile = game.darkness.pop()
-			game.squares[i] = tile
-			if (game.darkness.length === 0)
-				return goto_end_of_the_contest()
-		}
+	// Return Dragon if needed.
+	if (is_oval_space_empty(S_DRAGON_1) && game.tokens[TOKEN_DRAGON] !== S_DRAGON_2) {
+		game.state = "return_dragon"
+		return
 	}
 
+	goto_refill_tiles()
+}
+
+states.return_dragon = {
+	inactive: "End Turn",
+	prompt() {
+		view.prompt = "End Turn: Move the Dragon back to its space."
+		view.selected_token = TOKEN_DRAGON
+		gen_action_space(S_DRAGON_2)
+	},
+	space(_) {
+		log("Returned Dragon.")
+		game.tokens[TOKEN_DRAGON] = S_DRAGON_2
+		goto_refill_tiles()
+	}
+}
+
+function must_refill_tiles() {
+	for (let i = FIRST_SPACE; i <= LAST_TILE_SPACE; ++i)
+		if (is_oval_space_empty(i) && game.squares[i] === 0)
+			return true
+	return false
+}
+
+function goto_refill_tiles() {
+	if (must_refill_tiles())
+		game.state = "refill_tiles"
+	else
+		pass_play_to_rival()
+}
+
+states.refill_tiles = {
+	inactive: "End Turn",
+	prompt() {
+		view.prompt = "End Turn: Place a new tile."
+		for (let i = FIRST_SPACE; i <= LAST_TILE_SPACE; ++i)
+			if (is_oval_space_empty(i) && game.squares[i] === 0)
+				gen_action_square(i)
+	},
+	square(i) {
+		let tile = game.darkness.pop()
+		log("Placed " + tile_name(tile) + " at " + space_name(i) + ".")
+		game.squares[i] = tile
+		if (game.darkness.length === 0)
+			return goto_end_of_the_contest()
+		goto_refill_tiles()
+	},
+}
+
+function pass_play_to_rival() {
 	// Play passes to the rival player.
 	if (game.active === RED)
 		game.active = BLUE
@@ -383,18 +597,20 @@ function end_turn() {
 // === THE ACTIONS: DRAGON ===
 
 function goto_dragon() {
-	log("Dragon")
 	game.state = "dragon"
 }
 
 states.dragon = {
+	inactive: "Dragon",
 	prompt() {
+		view.prompt = "Dragon: Move the Dragon to an empty oval space."
 		view.selected_token = TOKEN_DRAGON
 		for (let i = FIRST_SPACE; i <= LAST_OVAL_SPACE; ++i)
 			if (i !== game.from && is_oval_space_empty(i))
 				gen_action_space(i)
 	},
 	space(to) {
+		log("Dragon to " + space_name(to) + ".")
 		game.tokens[TOKEN_DRAGON] = to
 		gift_tile_in_space(to)
 		end_turn()
@@ -403,106 +619,457 @@ states.dragon = {
 
 // === THE ACTIONS: SECRECY ===
 
-const SECRECY_PER_ROW = [ 1, 2, 2, 3, 0 ]
+function gain_tiles_from_darkness(n) {
+	for (let i = 0; i < n; ++i)
+		own_hand().push(game.darkness.pop())
+}
 
-function gain_tile_from_darkness() {
-	let tile = game.darkness.pop()
-	own_hand().push(tile)
-	return game.darkness.length === 0
+function gain_tiles_from_darkness_rival(n) {
+	for (let i = 0; i < n; ++i)
+		rival_hand().push(game.darkness.pop())
+}
+
+function gain_secrecy_tiles() {
+	let n = Math.min(SECRECY_PER_ROW[own_score() / 8 | 0], game.darkness.length)
+	log("Gained " + count_name(n) + ".")
+	gain_tiles_from_darkness(n)
+}
+
+function gain_secrecy_tiles_rival() {
+	let n = Math.min(SECRECY_PER_ROW[rival_score() / 8 | 0], game.darkness.length)
+	log("Rival gained " + count_name(n) + ".")
+	gain_tiles_from_darkness_rival(n)
 }
 
 function goto_secrecy() {
-	log("Secrecy")
-	let score = own_score()
-	let row = (score >> 8)
-	let n = SECRECY_PER_ROW[row]
-	for (let i = 0; i < n; ++i) {
-		log("Gained Tile from Darkness.")
-		if (gain_tile_from_darkness()) {
-			return goto_end_of_the_contest()
-		}
-	}
-	end_turn()
+	game.state = "secrecy"
+}
+
+states.secrecy = {
+	inactive: "Secrecy",
+	prompt() {
+		view.prompt = "Secrecy: Gain tiles from the Darkness to your Hand."
+		view.actions.darkness = 1
+	},
+	darkness() {
+		gain_secrecy_tiles()
+		end_turn()
+	},
 }
 
 // === THE ACTIONS: CLOTH OF GOLD ===
 
-function goto_cloth_of_gold() {
-	log("Cloth of Gold")
-	reveal_tiles_into_court(TILE_GOLD)
+function calc_cloth_of_gold_score() {
 	let own = count_tiles(own_court(), TILE_GOLD)
 	let rival = count_tiles(rival_court(), TILE_GOLD)
-	if (own > rival) {
-		if (score_own_points(2))
-			return goto_end_of_the_contest()
+	if (own > rival)
+		return 2
+	return 0
+}
+
+function goto_cloth_of_gold() {
+	log_reveal_tiles_into_court(TILE_GOLD)
+	if (can_reveal_tiles_into_court(TILE_GOLD))
+		game.state = "cloth_of_gold_reveal"
+	else
+		game.state = "cloth_of_gold_score"
+}
+
+states.cloth_of_gold_reveal = {
+	inactive: "Cloth of Gold",
+	prompt() {
+		view.prompt = "Cloth of Gold: Reveal all Gold tiles from your Hand."
+		gen_reveal_tiles_into_court(TILE_GOLD)
+	},
+	tile(tile) {
+		reveal_tile_into_court(tile)
+		if (!can_reveal_tiles_into_court(TILE_GOLD))
+			game.state = "cloth_of_gold_score"
+	},
+}
+
+states.cloth_of_gold_score = {
+	inactive: "Cloth of Gold",
+	prompt() {
+		prompt_score("Cloth of Gold", calc_cloth_of_gold_score())
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_cloth_of_gold_score())
+		end_turn()
 	}
-	end_turn()
 }
 
 // === THE ACTIONS: BANQUETS AND FEASTS  ===
 
+function calc_banquets_and_feasts_score() {
+	let n = count_tiles(own_court(), TILE_BLUE)
+	if (n === 0)
+		return 0
+	if (n === 1)
+		return 1
+	if (n === 2)
+		return 3
+	return 6
+}
+
 function goto_banquets_and_feasts() {
-	log("Banquets & Feasts")
-	reveal_tiles_into_court(TILE_BLUE)
-	let own = count_tiles(own_court(), TILE_BLUE)
-	let score = 0
-	if (own === 1)
-		score = 1
-	else if (own === 2)
-		score = 3
-	else if (own >= 3)
-		score = 6
-	remove_tiles_from_court(TILE_BLUE)
-	if (score_own_points(score))
-		return goto_end_of_the_contest()
-	end_turn()
+	log_reveal_tiles_into_court(TILE_BLUE)
+	if (can_reveal_tiles_into_court(TILE_BLUE))
+		game.state = "banquets_and_feasts_reveal"
+	else
+		game.state = "banquets_and_feasts_score"
+}
+
+states.banquets_and_feasts_reveal = {
+	inactive: "Banquets & Feasts",
+	prompt() {
+		view.prompt = "Banquets & Feasts: Reveal all Blue tiles from your Hand."
+		gen_reveal_tiles_into_court(TILE_BLUE)
+	},
+	tile(tile) {
+		reveal_tile_into_court(tile)
+		if (!can_reveal_tiles_into_court(TILE_BLUE))
+			game.state = "banquets_and_feasts_score"
+	},
+}
+
+states.banquets_and_feasts_score = {
+	inactive: "Banquets & Feasts",
+	prompt() {
+		prompt_score("Banquets & Feasts", calc_banquets_and_feasts_score())
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_banquets_and_feasts_score())
+		if (is_end_of_the_contest())
+			return goto_end_of_the_contest()
+		log_remove_tiles_from_court(TILE_BLUE)
+		if (can_remove_tiles_from_court(TILE_BLUE))
+			game.state = "banquets_and_feasts_remove"
+		else
+			end_turn()
+	},
+}
+
+states.banquets_and_feasts_remove = {
+	inactive: "Banquets & Feasts",
+	prompt() {
+		view.prompt = "Banquets & Feasts: Remove all Blue tiles from your Court."
+		gen_remove_tiles_from_court(TILE_BLUE)
+	},
+	tile(tile) {
+		remove_tile_from_court(tile)
+		if (!can_remove_tiles_from_court(TILE_BLUE))
+			end_turn()
+	},
 }
 
 // === THE ACTIONS: GODLINESS AND PIETY ===
 
+function calc_godliness_and_piety_score() {
+	return count_tiles(own_court(), TILE_WHITE)
+}
+
 function goto_godliness_and_piety() {
-	end_turn()
+	log_reveal_tiles_into_court(TILE_WHITE)
+	if (can_reveal_tiles_into_court(TILE_WHITE))
+		game.state = "godliness_and_piety_reveal"
+	else
+		game.state = "godliness_and_piety_score"
+}
+
+states.godliness_and_piety_reveal = {
+	inactive: "Godliness & Piety",
+	prompt() {
+		view.prompt = "Godliness & Piety: Reveal all White tiles from your Hand."
+		gen_reveal_tiles_into_court(TILE_WHITE)
+	},
+	tile(tile) {
+		reveal_tile_into_court(tile)
+		if (!can_reveal_tiles_into_court(TILE_WHITE))
+			game.state = "godliness_and_piety_score"
+	},
+}
+
+states.godliness_and_piety_score = {
+	inactive: "Godliness & Piety",
+	prompt() {
+		view.prompt = "Godliness & Piety: Score " + calc_godliness_and_piety_score() + " points."
+		prompt_score("Godliness & Piety", calc_godliness_and_piety_score())
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_godliness_and_piety_score())
+		if (is_end_of_the_contest())
+			return goto_end_of_the_contest()
+		log_remove_tiles_from_court(TILE_WHITE)
+		if (can_remove_tiles_from_court(TILE_WHITE))
+			game.state = "godliness_and_piety_remove"
+		else
+			end_turn()
+	},
+}
+
+states.godliness_and_piety_remove = {
+	inactive: "Godliness & Piety",
+	prompt() {
+		view.prompt = "Godliness & Piety: Remove all White tiles from your Court."
+		gen_remove_tiles_from_court(TILE_WHITE)
+	},
+	tile(tile) {
+		remove_tile_from_court(tile)
+		if (!can_remove_tiles_from_court(TILE_WHITE))
+			end_turn()
+	},
 }
 
 // === THE ACTIONS: TOURNAMENTS ===
 
+function calc_tournaments_score() {
+	return count_tiles(own_court(), TILE_RED)
+}
+
+function calc_tournaments_rival_score() {
+	return count_tiles(rival_court(), TILE_RED)
+}
+
 function goto_tournaments() {
-	end_turn()
+	goto_tournaments_reveal()
+}
+
+function goto_tournaments_reveal() {
+	log_reveal_tiles_into_court(TILE_RED)
+	if (can_reveal_tiles_into_court(TILE_RED))
+		game.state = "tournaments_reveal"
+	else
+		game.state = "tournaments_score_own"
+}
+
+states.tournaments_reveal = {
+	inactive: "Tournaments",
+	prompt() {
+		view.prompt = "Tournaments: Reveal all Red tiles from your Hand."
+		gen_reveal_tiles_into_court(TILE_RED)
+	},
+	tile(tile) {
+		reveal_tile_into_court(tile)
+		goto_tournaments_reveal()
+	},
+}
+
+states.tournaments_score_own = {
+	inactive: "Tournaments",
+	prompt() {
+		view.prompt = "Tournaments: Score " + calc_tournaments_score() + " points."
+		prompt_score("Tournaments", calc_tournaments_score())
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_tournaments_score())
+		if (is_end_of_the_contest())
+			return goto_end_of_the_contest()
+		game.state = "tournaments_score_rival"
+	},
+}
+
+states.tournaments_score_rival = {
+	inactive: "Tournaments",
+	prompt() {
+		prompt_score("Tournaments", calc_tournaments_rival_score(), " for your rival.")
+		gen_action_score_rival()
+	},
+	score() {
+		score_rival_points(calc_tournaments_rival_score())
+		if (is_end_of_the_contest())
+			return goto_end_of_the_contest()
+		log_remove_tiles_from_court(TILE_RED)
+		goto_tournaments_remove_own()
+	},
+}
+
+function goto_tournaments_remove_own() {
+	if (can_remove_tiles_from_court(TILE_RED))
+		game.state = "tournaments_remove_own"
+	else {
+		log_remove_tiles_from_rival_court(TILE_RED)
+		goto_tournaments_remove_rival()
+	}
+}
+
+states.tournaments_remove_own = {
+	inactive: "Tournaments",
+	prompt() {
+		view.prompt = "Tournaments: Remove all Red tiles from your Court."
+		gen_remove_tiles_from_court(TILE_RED)
+	},
+	tile(tile) {
+		remove_tile_from_court(tile)
+		goto_tournaments_remove_own()
+	},
+}
+
+function goto_tournaments_remove_rival() {
+	if (can_remove_tiles_from_rival_court(TILE_RED))
+		game.state = "tournaments_remove_rival"
+	else
+		game.state = "tournaments_secrecy"
+}
+
+states.tournaments_remove_rival = {
+	inactive: "Tournaments",
+	prompt() {
+		view.prompt = "Tournaments: Remove all Red tiles from rival Court."
+		gen_remove_tiles_from_rival_courts(TILE_RED)
+	},
+	tile(tile) {
+		remove_tile_from_rival_court(tile)
+		goto_tournaments_remove_rival()
+	},
+}
+
+states.tournaments_secrecy = {
+	inactive: "Tournaments",
+	prompt() {
+		view.prompt = "Tournaments: Gain tiles from the Darkness."
+		view.actions.darkness = 1
+	},
+	darkness() {
+		gain_secrecy_tiles()
+		gain_secrecy_tiles_rival()
+		end_turn()
+	},
 }
 
 // === THE ACTIONS: COLLECTIONS ===
 
-function goto_purple() {
-	end_turn()
+function calc_collections_score() {
+	let x1 = count_tiles(own_court(), TILE_GOLD)
+	let x2 = count_tiles(own_court(), TILE_BLUE)
+	let x3 = count_tiles(own_court(), TILE_WHITE)
+	let x4 = count_tiles(own_court(), TILE_RED)
+	return Math.min(x1, x2, x3, x4) * 2
+}
+
+function goto_collections() {
+	log_reveal_tiles_into_court(TILE_GOLD)
+	log_reveal_tiles_into_court(TILE_BLUE)
+	log_reveal_tiles_into_court(TILE_WHITE)
+	log_reveal_tiles_into_court(TILE_RED)
+	log_reveal_tiles_into_court(TILE_GREEN)
+	if (own_hand().length > 0)
+		game.state = "collections_reveal"
+	else
+		game.state = "collections_score"
+}
+
+states.collections_reveal = {
+	inactive: "Collections",
+	prompt() {
+		view.prompt = "Collections: Reveal all tiles from your Hand."
+		for (let tile of own_hand())
+			gen_action_tile(tile)
+	},
+	tile(tile) {
+		reveal_tile_into_court(tile)
+		if (own_hand().length === 0)
+			game.state = "collections_score"
+	},
+}
+
+states.collections_score = {
+	inactive: "Collections",
+	prompt() {
+		view.prompt = "Collections: Score " + calc_collections_score() + " points."
+		prompt_score("Collections", calc_collections_score())
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_collections_score())
+		end_turn()
+	}
 }
 
 // === END OF THE CONTEST ===
+
+function calc_jewel_score(court) {
+	let n = count_tiles(court, TILE_GREEN)
+	return n * n
+}
+
+function calc_gold_score(score, court) {
+	let n = count_tiles(court, TILE_GOLD)
+	return n * GOLD_PER_ROW[score / 8 | 0]
+}
+
+function goto_end_of_the_contest() {
+	log(".x End of the Contest")
+	game.state = "end_of_the_contest_jewels"
+}
+
+states.end_of_the_contest_jewels = {
+	prompt() {
+		prompt_score("End of the Contest", calc_jewel_score(own_court()), " for Jewels.")
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_jewel_score(own_court()))
+		game.state = "end_of_the_contest_jewels_rival"
+	},
+}
+
+states.end_of_the_contest_jewels_rival = {
+	prompt() {
+		prompt_score("End of the Contest", calc_jewel_score(rival_court()), " to your rival for Jewels.")
+		gen_action_score_rival()
+	},
+	score() {
+		score_rival_points(calc_jewel_score(rival_court()))
+		game.state = "end_of_the_contest_gold"
+	},
+}
+
+states.end_of_the_contest_gold = {
+	prompt() {
+		prompt_score("End of the Contest", calc_gold_score(own_score(), own_court()), " for Gold.")
+		gen_action_score()
+	},
+	score() {
+		score_own_points(calc_gold_score(own_score(), own_court()))
+		game.state = "end_of_the_contest_gold_rival"
+	},
+}
+
+states.end_of_the_contest_gold_rival = {
+	prompt() {
+		prompt_score("End of the Contest", calc_gold_score(rival_score(), rival_court()), " to your rival for Gold.")
+		gen_action_score_rival()
+	},
+	score() {
+		score_rival_points(calc_gold_score(rival_score(), rival_court()))
+		goto_victory()
+	},
+}
+
+function victory_check(red, blue) {
+	if (red > blue)
+		return goto_game_over(RED, "Red is the winner!")
+	if (blue > red)
+		return goto_game_over(BLUE, "Blue is the winner!")
+	return true
+}
+
+function goto_victory() {
+	if (victory_check(game.red_score, game.blue_score))
+		if (victory_check(count_tiles(game.red_court, TILE_WHITE), count_tiles(game.blue_court, TILE_WHITE)))
+			if (victory_check(game.red_court.length), game.blue_court.length)
+				goto_game_over("Shared", "The two majesties do share victory.")
+}
 
 // === COMMON LIBRARY ===
 
 function log(msg) {
 	game.log.push(msg)
-}
-
-function log_br() {
-	if (game.log.length > 0 && game.log[game.log.length - 1] !== "")
-		game.log.push("")
-}
-
-function logi(msg) {
-	game.log.push(">" + msg)
-}
-
-function log_h1(msg) {
-	log_br()
-	log(".h1 " + msg)
-	log_br()
-}
-
-function log_h2(msg) {
-	log_br()
-	log(".h2 " + msg)
-	log_br()
 }
 
 function clear_undo() {
