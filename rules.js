@@ -82,20 +82,11 @@ function space_name(s) {
 }
 
 function tile_name(tile) {
-	if (tile >= TILE_BLUE && tile < TILE_BLUE + 12) return "Blue"
-	if (tile >= TILE_RED && tile < TILE_RED + 12) return "Red"
-	if (tile >= TILE_GOLD && tile < TILE_GOLD + 12) return "Gold"
-	if (tile >= TILE_WHITE && tile < TILE_WHITE + 12) return "White"
-	if (tile >= TILE_GREEN && tile < TILE_GREEN + 12) return "Green"
-	return "None"
-}
-
-function tile_type_name(tile) {
-	if (tile >= TILE_BLUE && tile < TILE_BLUE + 12) return "Beasts"
-	if (tile >= TILE_RED && tile < TILE_RED + 12) return "Tournaments"
-	if (tile >= TILE_GOLD && tile < TILE_GOLD + 12) return "Cloth of Gold"
-	if (tile >= TILE_WHITE && tile < TILE_WHITE + 12) return "Piety"
-	if (tile >= TILE_GREEN && tile < TILE_GREEN + 12) return "Jewels"
+	if (tile >= TILE_BLUE && tile < TILE_BLUE + 12) return "blue"
+	if (tile >= TILE_RED && tile < TILE_RED + 12) return "red"
+	if (tile >= TILE_GOLD && tile < TILE_GOLD + 12) return "gold"
+	if (tile >= TILE_WHITE && tile < TILE_WHITE + 12) return "white"
+	if (tile >= TILE_GREEN && tile < TILE_GREEN + 12) return "green"
 	return "None"
 }
 
@@ -164,6 +155,9 @@ exports.view = function(state, player) {
 		prompt: null,
 		tokens: game.tokens,
 		squares: game.squares,
+		darkness: game.darkness.length,
+		red_hand: game.red_hand.length,
+		blue_hand: game.blue_hand.length,
 		red_score: game.red_score,
 		blue_score: game.blue_score,
 		red_court: game.red_court,

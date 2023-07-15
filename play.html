@@ -28,15 +28,26 @@ body.Observer #hand {
 	display: none;
 }
 
-.court, #hand {
+.role_hand_size { float: right }
+
+.court, #hand, #darkness {
 	font-family: "Albert Text";
 	padding: 6px 10px;
 	text-align: right;
 	font-size: 20px;
+	//text-shadow: 0 0 2px #fff8;
 	color: #0004;
 }
 
-#log { background-color: oldlace; }
+#darkness {
+	position: absolute;
+	right: -2px;
+	bottom: -2px;
+	color: #444;
+	text-shadow: 0 0 4px white;
+}
+
+#log { background-color: whitesmoke; }
 #log .h1 {
 	margin: 6px 0;
 	padding: 2px 8px;
@@ -71,7 +82,7 @@ body.Observer #hand {
 	position: absolute;
 	width: 825px;
 	border: 2px solid #0004;
-	border-color: #fff4 #0004 #0004 #fff4;
+	border-color: #fff3 #0004 #0004 #fff3;
 	box-shadow: 0 0 0 1px #222, 1px 1px 8px -2px #000;
 }
 
@@ -97,9 +108,9 @@ body.Observer #hand {
 #hand { top: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px) }
 #mapwrap { height: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px + 80px) }
 
+#hand, .court { background-color: #666 }
 .red.court { background-color: hsl(359,35%,45%) }
 .blue.court { background-color: hsl(220,35%,45%) }
-#hand { background-color: #666 }
 
 #map div {
 	position: absolute;
@@ -209,14 +220,16 @@ body.Observer #hand {
 	<div id="roles">
 		<div class="role" id="role_Red">
 			<div class="role_name">
-				Red &#x2013;
-				<span class="role_user"></span>
+				Red
+				<div class="role_hand_size" id="red_hand_size"></div>
+				<div class="role_user"></div>
 			</div>
 		</div>
 		<div class="role" id="role_Blue">
 			<div class="role_name">
-				Blue &#x2013;
-				<span class="role_user"></span>
+				Blue
+				<div class="role_hand_size" id="blue_hand_size"></div>
+				<div class="role_user"></div>
 			</div>
 		</div>
 	</div>
@@ -227,10 +240,10 @@ body.Observer #hand {
 
 <div id="mapwrap" class="fit">
 <div id="map">
-<div id="court1" class="red court">Rival Court</div>
-<div id="board"></div>
-<div id="court2" class="blue court">Court</div>
-<div id="hand" class="blue hand">Hand</div>
+<div id="court1" class="court">Rival Court</div>
+<div id="board"><div id="darkness"></div></div>
+<div id="court2" class="court">Court</div>
+<div id="hand">Hand</div>
 </div>
 </div>
 

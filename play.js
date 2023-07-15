@@ -72,6 +72,9 @@ let ui = {
 	board: document.getElementById("map"),
 	court1: document.getElementById("court1"),
 	court2: document.getElementById("court2"),
+	darkness: document.getElementById("darkness"),
+	red_hand_size: document.getElementById("red_hand_size"),
+	blue_hand_size: document.getElementById("blue_hand_size"),
 	red_score: null,
 	blue_score: null,
 	oval_spaces: [],
@@ -179,6 +182,10 @@ function hide(elt) {
 
 function on_update() {
 	on_init()
+
+	ui.red_hand_size.textContent = view.red_hand + " in Hand"
+	ui.blue_hand_size.textContent = view.blue_hand + " in Hand"
+	ui.darkness.textContent = view.darkness + " in Darkness"
 
 	for (let i = 1; i <= 54; ++i) {
 		if ((view.hand && view.hand.includes(i)) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i))
