@@ -1016,7 +1016,14 @@ function goto_collections() {
 	if (own_hand().length > 0)
 		game.state = "collections_reveal"
 	else
+		goto_collections_score()
+}
+
+function goto_collections_score() {
+	if (calc_collections_score())
 		game.state = "collections_score"
+	else
+		end_turn()
 }
 
 states.collections_reveal = {
@@ -1029,7 +1036,7 @@ states.collections_reveal = {
 	tile(tile) {
 		reveal_tile_into_court(tile)
 		if (own_hand().length === 0)
-			game.state = "collections_score"
+			goto_collections_score()
 	},
 }
 
