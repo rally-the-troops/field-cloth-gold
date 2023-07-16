@@ -514,9 +514,6 @@ function is_end_of_the_contest() {
 	return false
 }
 
-// TODO: manual return dragon
-// TODO: manual refill
-
 function end_turn() {
 	clear_undo()
 
@@ -526,14 +523,25 @@ function end_turn() {
 
 	// Return Dragon if needed.
 	if (is_oval_space_empty(S_DRAGON_1) && game.tokens[TOKEN_DRAGON] !== S_DRAGON_2) {
-		game.state = "return_dragon"
+		game.state = "return_dragon_1"
 		return
 	}
 
 	goto_refill_tiles()
 }
 
-states.return_dragon = {
+states.return_dragon_1 = {
+	inactive: "Dragon",
+	prompt() {
+		view.prompt = "End of Turn Move the Dragon back to its space."
+		gen_action_token(TOKEN_DRAGON)
+	},
+	token(id) {
+		game.state = "return_dragon_2"
+	},
+}
+
+states.return_dragon_2 = {
 	inactive: "End Turn",
 	prompt() {
 		view.prompt = "End Turn: Move the Dragon back to its space."
@@ -591,10 +599,21 @@ function pass_play_to_rival() {
 // === THE ACTIONS: DRAGON ===
 
 function goto_dragon() {
-	game.state = "dragon"
+	game.state = "dragon_1"
 }
 
-states.dragon = {
+states.dragon_1 = {
+	inactive: "Dragon",
+	prompt() {
+		view.prompt = "Dragon: Move the Dragon to an empty oval space."
+		gen_action_token(TOKEN_DRAGON)
+	},
+	token(id) {
+		game.state = "dragon_2"
+	},
+}
+
+states.dragon_2 = {
 	inactive: "Dragon",
 	prompt() {
 		view.prompt = "Dragon: Move the Dragon to an empty oval space."
