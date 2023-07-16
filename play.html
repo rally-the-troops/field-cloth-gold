@@ -103,6 +103,7 @@ body.Observer #hand { display: none }
 	height: 56px;
 	left: 10px;
 	bottom: 10px;
+	z-index: 1;
 }
 
 #darkness_button.action {
@@ -130,7 +131,7 @@ body.Observer #hand { display: none }
 .token, .tile {
 	position: absolute;
 	box-sizing: border-box;
-	transition-property: top, left;
+	transition-property: top, left, opacity;
 	transition-duration: 500ms;
 	transition-timing-function: ease;
 }

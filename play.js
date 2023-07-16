@@ -84,6 +84,7 @@ let ui = {
 	square_spaces: [],
 	tokens: [],
 	tiles: [ null ],
+	tile_was_visible: Array(54).fill(0),
 }
 
 let action_register = []
@@ -170,16 +171,6 @@ function on_init() {
 		ui.tiles[i] = create_item({ className: "tile green", my_action: "tile", my_id: i })
 }
 
-function show(elt) {
-	if (elt.parentElement !== ui.board)
-		ui.board.appendChild(elt)
-}
-
-function hide(elt) {
-	if (elt.parentElement === ui.board)
-		elt.remove()
-}
-
 function on_update() {
 	on_init()
 
@@ -190,10 +181,21 @@ function on_update() {
 	ui.darkness_button.classList.toggle("action", is_action("darkness"))
 
 	for (let i = 0; i < 54; ++i) {
-		if ((view.hand && view.hand.includes(i)) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i))
-			show(ui.tiles[i])
-		else
-			hide(ui.tiles[i])
+		if ((view.hand && view.hand.includes(i)) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i)) {
+			ui.tiles[i].style.opacity = 1
+			ui.tile_was_visible[i] = 1
+		} else {
+			ui.tiles[i].style.opacity = 0
+			if (ui.tile_was_visible[i]) {
+				ui.tiles[i].style.top = "674px" // 104 + 638 - 12 - 56
+				ui.tiles[i].style.left = "757px" // 825 - 12 - 56
+			} else {
+				ui.tiles[i].style.top = "674px" // 104 + 638 - 12 - 56
+				ui.tiles[i].style.left = "12px"
+			}
+			ui.tiles[i].style.zIndex = 0
+			ui.tile_was_visible[i] = 0
+		}
 	}
 
 	for (let i = 0; i < 6; ++i) {
@@ -256,7 +258,7 @@ function on_update() {
 			let y = HAND_Y
 			ui.tiles[k].style.left = x + "px"
 			ui.tiles[k].style.top = y + "px"
-			ui.tiles[k].style.zIndex = i
+			ui.tiles[k].style.zIndex = i + 100
 		}
 	}
 
