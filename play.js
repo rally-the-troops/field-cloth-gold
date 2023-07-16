@@ -1,12 +1,12 @@
 "use strict"
 
-const FIRST_TILE = 1
+/* global view, player, send_action, action_button, scroll_with_middle_mouse */
+
 const TILE_BLUE = 1
 const TILE_RED = 13
 const TILE_GOLD = 25
 const TILE_WHITE = 37
 const TILE_GREEN = 49
-const LAST_TILE = 54
 
 const TILE_W = 56
 const TILE_SPACE = TILE_W + 12

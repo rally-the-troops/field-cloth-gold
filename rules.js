@@ -44,7 +44,6 @@ const TILE_RED = 13
 const TILE_GOLD = 25
 const TILE_WHITE = 37
 const TILE_GREEN = 49
-const LAST_TILE = 54
 
 const COUNT_NAME = [
 	"no",
@@ -86,7 +85,7 @@ function tile_name(tile) {
 	if (tile >= TILE_RED && tile < TILE_RED + 12) return "red"
 	if (tile >= TILE_GOLD && tile < TILE_GOLD + 12) return "gold"
 	if (tile >= TILE_WHITE && tile < TILE_WHITE + 12) return "white"
-	if (tile >= TILE_GREEN && tile < TILE_GREEN + 12) return "green"
+	if (tile >= TILE_GREEN && tile < TILE_GREEN + 6) return "green"
 	return "None"
 }
 
@@ -501,7 +500,7 @@ states.move_token_to = {
 			return goto_collections()
 		}
 	},
-	token(t) {
+	token(_) {
 		pop_undo()
 	},
 }
@@ -534,7 +533,7 @@ states.return_dragon_1 = {
 		view.prompt = "End of Turn Move the Dragon back to its space."
 		gen_action_token(TOKEN_DRAGON)
 	},
-	token(id) {
+	token(_) {
 		game.state = "return_dragon_2"
 	},
 }
@@ -609,7 +608,7 @@ states.dragon_1 = {
 		view.prompt = "Dragon: Move the Dragon to an empty oval space."
 		gen_action_token(TOKEN_DRAGON)
 	},
-	token(id) {
+	token(_) {
 		game.state = "dragon_2"
 	},
 }
@@ -1214,10 +1213,4 @@ function array_remove_item(array, item) {
 	for (let i = 0; i < n; ++i)
 		if (array[i] === item)
 			return array_remove(array, i)
-}
-
-function array_insert(array, index, item) {
-	for (let i = array.length; i > index; --i)
-		array[i] = array[i - 1]
-	array[index] = item
 }
