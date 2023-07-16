@@ -12,7 +12,7 @@ exports.scenarios = [ "Standard" ]
 exports.roles = [ RED, BLUE ]
 
 const SECRECY_PER_ROW = [ 1, 2, 2, 3, 0 ]
-const GOLD_PER_ROW = [ 3, 3, 2, 1, 1 ]
+const GOLD_PER_ROW = [ 3, 3, 2, 1, 1, 1, 1, 1, 1, 1 ]
 
 const TOKEN_DRAGON = 0
 const TOKEN_RED_1 = 1
@@ -472,7 +472,7 @@ states.move_token_to = {
 		else
 			log(".b " + space_name(to))
 
-		log("From " + space_name(game.from) + ".")
+		//log("From " + space_name(game.from) + ".")
 
 		// Move the token.
 		game.tokens[game.selected_token] = to
@@ -1069,6 +1069,7 @@ function goto_end_of_the_contest() {
 }
 
 states.end_of_the_contest_jewels = {
+	inactive: "End of the Contest",
 	prompt() {
 		prompt_score("End of the Contest", calc_jewel_score(own_court()), " for Jewels.")
 		gen_action_score()
@@ -1080,6 +1081,7 @@ states.end_of_the_contest_jewels = {
 }
 
 states.end_of_the_contest_jewels_rival = {
+	inactive: "End of the Contest",
 	prompt() {
 		prompt_score("End of the Contest", calc_jewel_score(rival_court()), " to your rival for Jewels.")
 		gen_action_score_rival()
@@ -1091,6 +1093,7 @@ states.end_of_the_contest_jewels_rival = {
 }
 
 states.end_of_the_contest_gold = {
+	inactive: "End of the Contest",
 	prompt() {
 		prompt_score("End of the Contest", calc_gold_score(own_score(), own_court()), " for Gold.")
 		gen_action_score()
@@ -1102,6 +1105,7 @@ states.end_of_the_contest_gold = {
 }
 
 states.end_of_the_contest_gold_rival = {
+	inactive: "End of the Contest",
 	prompt() {
 		prompt_score("End of the Contest", calc_gold_score(rival_score(), rival_court()), " to your rival for Gold.")
 		gen_action_score_rival()
