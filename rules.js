@@ -322,7 +322,7 @@ function gift_tile_in_space(to) {
 
 function score_points(who, n, reason = ".") {
 	if (n > 0) {
-		log(who + " scored " + n + reason)
+		log(who + " scored +" + n + reason)
 		if (who === RED)
 			game.red_score += n
 		else
@@ -332,7 +332,7 @@ function score_points(who, n, reason = ".") {
 
 function score_own_points(n) {
 	if (n > 0) {
-		log("Score " + n)
+		log("Score +" + n)
 		if (game.active === RED)
 			game.red_score += n
 		else
@@ -342,7 +342,7 @@ function score_own_points(n) {
 
 function score_rival_points(n) {
 	if (n > 0) {
-		log("Score " + n + " for rival")
+		log("Score +" + n + " for rival")
 		if (game.active === RED)
 			game.blue_score += n
 		else
@@ -1095,7 +1095,7 @@ states.end_of_the_contest_jewels_1 = {
 		gen_action_score_red()
 	},
 	score() {
-		score_points(RED, calc_jewel_score(game.red_court), " for Jewels.")
+		score_points(RED, calc_jewel_score(game.red_court), " for J")
 		goto_end_of_the_contest_jewels_2()
 	},
 }
@@ -1107,7 +1107,7 @@ states.end_of_the_contest_jewels_2 = {
 		gen_action_score_blue()
 	},
 	score() {
-		score_points(BLUE, calc_jewel_score(game.blue_court), " for Jewels.")
+		score_points(BLUE, calc_jewel_score(game.blue_court), " for J")
 		goto_end_of_the_contest_gold_1()
 	},
 }
@@ -1119,7 +1119,7 @@ states.end_of_the_contest_gold_1 = {
 		gen_action_score_red()
 	},
 	score() {
-		score_points(RED, calc_gold_score(game.red_score, game.red_court), " for Gold.")
+		score_points(RED, calc_gold_score(game.red_score, game.red_court), " for G")
 		goto_end_of_the_contest_gold_2()
 	},
 }
@@ -1131,7 +1131,7 @@ states.end_of_the_contest_gold_2 = {
 		gen_action_score_blue()
 	},
 	score() {
-		score_points(BLUE, calc_gold_score(game.blue_score, game.blue_court), " for Gold.")
+		score_points(BLUE, calc_gold_score(game.blue_score, game.blue_court), " for G")
 		goto_victory()
 	},
 }
