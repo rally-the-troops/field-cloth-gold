@@ -515,8 +515,6 @@ function is_end_of_the_contest() {
 }
 
 function end_turn() {
-	clear_undo()
-
 	// Game End triggered?
 	if (is_end_of_the_contest())
 		return goto_end_of_the_contest()
@@ -578,6 +576,7 @@ states.refill_tiles = {
 				gen_action_square(i)
 	},
 	square(i) {
+		clear_undo()
 		let tile = game.darkness.pop()
 		log("Placed " + tile_name(tile) + " at " + space_name(i) + ".")
 		game.squares[i] = tile
@@ -588,6 +587,8 @@ states.refill_tiles = {
 }
 
 function pass_play_to_rival() {
+	clear_undo()
+
 	// Play passes to the rival player.
 	if (game.active === RED)
 		game.active = BLUE
@@ -665,6 +666,7 @@ states.secrecy = {
 		view.actions.darkness = 1
 	},
 	darkness() {
+		clear_undo()
 		gain_secrecy_tiles()
 		end_turn()
 	},
@@ -685,7 +687,14 @@ function goto_cloth_of_gold() {
 	if (can_reveal_tiles_into_court(TILE_GOLD))
 		game.state = "cloth_of_gold_reveal"
 	else
+		goto_cloth_of_gold_score()
+}
+
+function goto_cloth_of_gold_score() {
+	if (calc_cloth_of_gold_score())
 		game.state = "cloth_of_gold_score"
+	else
+		end_turn()
 }
 
 states.cloth_of_gold_reveal = {
@@ -697,7 +706,7 @@ states.cloth_of_gold_reveal = {
 	tile(tile) {
 		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_GOLD))
-			game.state = "cloth_of_gold_score"
+			goto_cloth_of_gold_score()
 	},
 }
 
@@ -731,7 +740,22 @@ function goto_banquets_and_feasts() {
 	if (can_reveal_tiles_into_court(TILE_BLUE))
 		game.state = "banquets_and_feasts_reveal"
 	else
+		goto_banquets_and_feasts_score()
+}
+
+function goto_banquets_and_feasts_score() {
+	if (calc_banquets_and_feasts_score())
 		game.state = "banquets_and_feasts_score"
+	else
+		goto_banquets_and_feasts_remove()
+}
+
+function goto_banquets_and_feasts_remove() {
+	log_remove_tiles_from_court(TILE_BLUE)
+	if (can_remove_tiles_from_court(TILE_BLUE))
+		game.state = "banquets_and_feasts_remove"
+	else
+		end_turn()
 }
 
 states.banquets_and_feasts_reveal = {
@@ -743,7 +767,7 @@ states.banquets_and_feasts_reveal = {
 	tile(tile) {
 		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_BLUE))
-			game.state = "banquets_and_feasts_score"
+			goto_banquets_and_feasts_score()
 	},
 }
 
@@ -757,11 +781,7 @@ states.banquets_and_feasts_score = {
 		score_own_points(calc_banquets_and_feasts_score())
 		if (is_end_of_the_contest())
 			return goto_end_of_the_contest()
-		log_remove_tiles_from_court(TILE_BLUE)
-		if (can_remove_tiles_from_court(TILE_BLUE))
-			game.state = "banquets_and_feasts_remove"
-		else
-			end_turn()
+		goto_banquets_and_feasts_remove()
 	},
 }
 
@@ -789,7 +809,22 @@ function goto_godliness_and_piety() {
 	if (can_reveal_tiles_into_court(TILE_WHITE))
 		game.state = "godliness_and_piety_reveal"
 	else
+		goto_godliness_and_piety_score()
+}
+
+function goto_godliness_and_piety_score() {
+	if (calc_godliness_and_piety_score())
 		game.state = "godliness_and_piety_score"
+	else
+		goto_godliness_and_piety_remove()
+}
+
+function goto_godliness_and_piety_remove() {
+	log_remove_tiles_from_court(TILE_WHITE)
+	if (can_remove_tiles_from_court(TILE_WHITE))
+		game.state = "godliness_and_piety_remove"
+	else
+		end_turn()
 }
 
 states.godliness_and_piety_reveal = {
@@ -801,7 +836,7 @@ states.godliness_and_piety_reveal = {
 	tile(tile) {
 		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_WHITE))
-			game.state = "godliness_and_piety_score"
+			goto_godliness_and_piety_score()
 	},
 }
 
@@ -816,11 +851,7 @@ states.godliness_and_piety_score = {
 		score_own_points(calc_godliness_and_piety_score())
 		if (is_end_of_the_contest())
 			return goto_end_of_the_contest()
-		log_remove_tiles_from_court(TILE_WHITE)
-		if (can_remove_tiles_from_court(TILE_WHITE))
-			game.state = "godliness_and_piety_remove"
-		else
-			end_turn()
+		goto_godliness_and_piety_remove()
 	},
 }
 
@@ -848,15 +879,41 @@ function calc_tournaments_rival_score() {
 }
 
 function goto_tournaments() {
-	goto_tournaments_reveal()
-}
-
-function goto_tournaments_reveal() {
 	log_reveal_tiles_into_court(TILE_RED)
 	if (can_reveal_tiles_into_court(TILE_RED))
 		game.state = "tournaments_reveal"
 	else
+		goto_tournaments_score_own()
+}
+
+function goto_tournaments_score_own() {
+	if (calc_tournaments_score())
 		game.state = "tournaments_score_own"
+	else
+		goto_tournaments_remove_own()
+}
+
+function goto_tournaments_remove_own() {
+	log_remove_tiles_from_court(TILE_RED)
+	if (can_remove_tiles_from_court(TILE_RED))
+		game.state = "tournaments_remove_own"
+	else
+		goto_tournaments_remove_rival()
+}
+
+function goto_tournaments_score_rival() {
+	if (calc_tournaments_rival_score())
+		game.state = "tournaments_score_rival"
+	else
+		goto_tournaments_remove_rival()
+}
+
+function goto_tournaments_remove_rival() {
+	log_remove_tiles_from_rival_court(TILE_RED)
+	if (can_remove_tiles_from_rival_court(TILE_RED))
+		game.state = "tournaments_remove_rival"
+	else
+		game.state = "tournaments_secrecy"
 }
 
 states.tournaments_reveal = {
@@ -867,7 +924,8 @@ states.tournaments_reveal = {
 	},
 	tile(tile) {
 		reveal_tile_into_court(tile)
-		goto_tournaments_reveal()
+		if (!can_reveal_tiles_into_court(TILE_RED))
+			goto_tournaments_score_own()
 	},
 }
 
@@ -882,7 +940,20 @@ states.tournaments_score_own = {
 		score_own_points(calc_tournaments_score())
 		if (is_end_of_the_contest())
 			return goto_end_of_the_contest()
-		game.state = "tournaments_score_rival"
+		goto_tournaments_remove_own()
+	},
+}
+
+states.tournaments_remove_own = {
+	inactive: "Tournaments",
+	prompt() {
+		view.prompt = "Tournaments: Remove all Red tiles from your Court."
+		gen_remove_tiles_from_court(TILE_RED)
+	},
+	tile(tile) {
+		remove_tile_from_court(tile)
+		if (!can_remove_tiles_from_court(TILE_RED))
+			goto_tournaments_score_rival()
 	},
 }
 
@@ -896,37 +967,8 @@ states.tournaments_score_rival = {
 		score_rival_points(calc_tournaments_rival_score())
 		if (is_end_of_the_contest())
 			return goto_end_of_the_contest()
-		log_remove_tiles_from_court(TILE_RED)
-		goto_tournaments_remove_own()
-	},
-}
-
-function goto_tournaments_remove_own() {
-	if (can_remove_tiles_from_court(TILE_RED))
-		game.state = "tournaments_remove_own"
-	else {
-		log_remove_tiles_from_rival_court(TILE_RED)
 		goto_tournaments_remove_rival()
-	}
-}
-
-states.tournaments_remove_own = {
-	inactive: "Tournaments",
-	prompt() {
-		view.prompt = "Tournaments: Remove all Red tiles from your Court."
-		gen_remove_tiles_from_court(TILE_RED)
 	},
-	tile(tile) {
-		remove_tile_from_court(tile)
-		goto_tournaments_remove_own()
-	},
-}
-
-function goto_tournaments_remove_rival() {
-	if (can_remove_tiles_from_rival_court(TILE_RED))
-		game.state = "tournaments_remove_rival"
-	else
-		game.state = "tournaments_secrecy"
 }
 
 states.tournaments_remove_rival = {
@@ -937,7 +979,8 @@ states.tournaments_remove_rival = {
 	},
 	tile(tile) {
 		remove_tile_from_rival_court(tile)
-		goto_tournaments_remove_rival()
+		if (!can_remove_tiles_from_rival_court(TILE_RED))
+			game.state = "tournaments_secrecy"
 	},
 }
 
@@ -948,6 +991,7 @@ states.tournaments_secrecy = {
 		view.actions.darkness = 1
 	},
 	darkness() {
+		clear_undo()
 		gain_secrecy_tiles()
 		gain_secrecy_tiles_rival()
 		end_turn()
@@ -1086,37 +1130,31 @@ function log(msg) {
 }
 
 function clear_undo() {
-	if (game.undo) {
-		game.undo.length = 0
-	}
+	game.undo.length = 0
 }
 
 function push_undo() {
-	if (game.undo) {
-		let copy = {}
-		for (let k in game) {
-			let v = game[k]
-			if (k === "undo")
-				continue
-			else if (k === "log")
-				v = v.length
-			else if (typeof v === "object" && v !== null)
-				v = object_copy(v)
-			copy[k] = v
-		}
-		game.undo.push(copy)
+	let copy = {}
+	for (let k in game) {
+		let v = game[k]
+		if (k === "undo")
+			continue
+		else if (k === "log")
+			v = v.length
+		else if (typeof v === "object" && v !== null)
+			v = object_copy(v)
+		copy[k] = v
 	}
+	game.undo.push(copy)
 }
 
 function pop_undo() {
-	if (game.undo) {
-		let save_log = game.log
-		let save_undo = game.undo
-		game = save_undo.pop()
-		save_log.length = game.log
-		game.log = save_log
-		game.undo = save_undo
-	}
+	let save_log = game.log
+	let save_undo = game.undo
+	game = save_undo.pop()
+	save_log.length = game.log
+	game.log = save_log
+	game.undo = save_undo
 }
 
 function random(range) {
