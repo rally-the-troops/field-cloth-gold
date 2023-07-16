@@ -2,11 +2,12 @@
 
 /* global view, player, send_action, action_button, scroll_with_middle_mouse */
 
-const TILE_BLUE = 1
-const TILE_RED = 13
-const TILE_GOLD = 25
-const TILE_WHITE = 37
-const TILE_GREEN = 49
+const TILE_NONE = -1
+const TILE_GOLD = 0
+const TILE_BLUE = 12
+const TILE_WHITE = 24
+const TILE_RED = 36
+const TILE_GREEN = 48
 
 const TILE_W = 56
 const TILE_SPACE = TILE_W + 12
@@ -45,10 +46,10 @@ const LAYOUT_OVAL = [
 	[67,106,46,46],
 
 	// off-board
-	[10,638-50],
-	[110,638-50],
-	[60,638-50],
-	[160,638-50],
+	[75,638-50],
+	[175,638-50],
+	[125,638-50],
+	[225,638-50],
 ]
 
 const LAYOUT_SQUARE = [
@@ -73,7 +74,8 @@ let ui = {
 	board: document.getElementById("map"),
 	court1: document.getElementById("court1"),
 	court2: document.getElementById("court2"),
-	darkness: document.getElementById("darkness"),
+	darkness_label: document.getElementById("darkness_label"),
+	darkness_button: document.getElementById("darkness_button"),
 	red_hand_size: document.getElementById("red_hand_size"),
 	blue_hand_size: document.getElementById("blue_hand_size"),
 	red_score: null,
@@ -114,14 +116,9 @@ function create(t, p, ...c) {
 	return e
 }
 
-function create_token(p) {
+function create_item(p) {
 	let e = create("div", p)
 	ui.board.appendChild(e)
-	return e
-}
-
-function create_tile(p) {
-	let e = create("div", p)
 	return e
 }
 
@@ -150,25 +147,27 @@ function on_init() {
 		ui.board.append(ui.square_spaces[i])
 	}
 
-	ui.red_score = create_token({ className: "token red", my_action: "score", my_id: 1 })
-	ui.blue_score = create_token({ className: "token blue", my_action: "score", my_id: 2 })
+	ui.red_score = create_item({ className: "token red", my_action: "score", my_id: 1 })
+	ui.blue_score = create_item({ className: "token blue", my_action: "score", my_id: 2 })
 
-	ui.tokens[0] = create_token({ className: "token white", my_action: "token", my_id: 0 })
-	ui.tokens[1] = create_token({ className: "token red", my_action: "token", my_id: 1 })
-	ui.tokens[2] = create_token({ className: "token red", my_action: "token", my_id: 2 })
-	ui.tokens[3] = create_token({ className: "token blue", my_action: "token", my_id: 3 })
-	ui.tokens[4] = create_token({ className: "token blue", my_action: "token", my_id: 4 })
+	ui.tokens[0] = create_item({ className: "token white", my_action: "token", my_id: 0 })
+	ui.tokens[1] = create_item({ className: "token red", my_action: "token", my_id: 1 })
+	ui.tokens[2] = create_item({ className: "token red", my_action: "token", my_id: 2 })
+	ui.tokens[3] = create_item({ className: "token blue", my_action: "token", my_id: 3 })
+	ui.tokens[4] = create_item({ className: "token blue", my_action: "token", my_id: 4 })
+
+	ui.darkness_button.onclick = function () { send_action("darkness") }
 
 	for (let i = TILE_BLUE; i < TILE_BLUE + 12; ++i)
-		ui.tiles[i] = create_tile({ className: "tile blue", my_action: "tile", my_id: i })
+		ui.tiles[i] = create_item({ className: "tile blue", my_action: "tile", my_id: i })
 	for (let i = TILE_RED; i < TILE_RED + 12; ++i)
-		ui.tiles[i] = create_tile({ className: "tile red", my_action: "tile", my_id: i })
+		ui.tiles[i] = create_item({ className: "tile red", my_action: "tile", my_id: i })
 	for (let i = TILE_GOLD; i < TILE_GOLD + 12; ++i)
-		ui.tiles[i] = create_tile({ className: "tile gold", my_action: "tile", my_id: i })
+		ui.tiles[i] = create_item({ className: "tile gold", my_action: "tile", my_id: i })
 	for (let i = TILE_WHITE; i < TILE_WHITE + 12; ++i)
-		ui.tiles[i] = create_tile({ className: "tile white", my_action: "tile", my_id: i })
+		ui.tiles[i] = create_item({ className: "tile white", my_action: "tile", my_id: i })
 	for (let i = TILE_GREEN; i < TILE_GREEN + 6; ++i)
-		ui.tiles[i] = create_tile({ className: "tile green", my_action: "tile", my_id: i })
+		ui.tiles[i] = create_item({ className: "tile green", my_action: "tile", my_id: i })
 }
 
 function show(elt) {
@@ -186,9 +185,11 @@ function on_update() {
 
 	ui.red_hand_size.textContent = view.red_hand + " in Hand"
 	ui.blue_hand_size.textContent = view.blue_hand + " in Hand"
-	ui.darkness.textContent = view.darkness + " in Darkness"
+	ui.darkness_label.textContent = view.darkness + " in Darkness"
 
-	for (let i = 1; i <= 54; ++i) {
+	ui.darkness_button.classList.toggle("action", is_action("darkness"))
+
+	for (let i = 0; i < 54; ++i) {
 		if ((view.hand && view.hand.includes(i)) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i))
 			show(ui.tiles[i])
 		else
@@ -197,7 +198,7 @@ function on_update() {
 
 	for (let i = 0; i < 6; ++i) {
 		let k = view.squares[i]
-		if (k > 0) {
+		if (k !== TILE_NONE) {
 			let x = LAYOUT_SQUARE[i][0] + TILE_DX + BOARD_X
 			let y = LAYOUT_SQUARE[i][1] + TILE_DY + BOARD_Y
 			ui.tiles[k].style.left = x + "px"
@@ -279,10 +280,29 @@ function on_update() {
 	for (let e of action_register)
 		e.classList.toggle("action", is_action(e.my_action, e.my_id))
 
-	action_button("darkness", "Darkness")
+	//action_button("darkness", "Darkness")
 	action_button("done", "Done")
 	action_button("undo", "Undo")
 }
+
+const IMG_G = '<span class="t gold"></span>'
+const IMG_B = '<span class="t blue"></span>'
+const IMG_R = '<span class="t red"></span>'
+const IMG_W = '<span class="t white"></span>'
+const IMG_J = '<span class="t green"></span>'
+const IMG_K = '<span class="t black"></span>'
+
+const IMG_OD = '<span class="c white"></span>'
+const IMG_OS = '<span class="o secrecy"></span>'
+const IMG_OG = '<span class="o gold"></span>'
+const IMG_OB = '<span class="o blue"></span>'
+const IMG_OR = '<span class="o red"></span>'
+const IMG_OW = '<span class="o white"></span>'
+const IMG_OP = '<span class="o purple"></span>'
+
+const IMG_CW = '<span class="c white"></span>'
+const IMG_CR = '<span class="c red"></span>'
+const IMG_CB = '<span class="c blue"></span>'
 
 function on_log(text) {
 	let p = document.createElement("div")
@@ -299,6 +319,17 @@ function on_log(text) {
 		p.className = 'h1 x'
 	}
 
+	text = text.replace(/\bG\b/g, IMG_G)
+	text = text.replace(/\bB\b/g, IMG_B)
+	text = text.replace(/\bR\b/g, IMG_R)
+	text = text.replace(/\bW\b/g, IMG_W)
+	text = text.replace(/\bJ\b/g, IMG_J)
+	text = text.replace(/\bK\b/g, IMG_K)
+
+	text = text.replace(/\bCR\b/g, IMG_CR)
+	text = text.replace(/\bCB\b/g, IMG_CB)
+	text = text.replace(/\bCW\b/g, IMG_CW)
+
 	if (text.match(/^Dragon$/))
 		p.classList.add("dragon")
 	if (text.match(/^Secrecy$/))
@@ -314,7 +345,15 @@ function on_log(text) {
 	if (text.match(/^Collections$/))
 		p.classList.add("purple")
 
-	p.textContent = text
+	text = text.replace(/\bO0\b/g, IMG_OS)
+	text = text.replace(/\bO1\b/g, IMG_OG)
+	text = text.replace(/\bO2\b/g, IMG_OB)
+	text = text.replace(/\bO3\b/g, IMG_OW)
+	text = text.replace(/\bO4\b/g, IMG_OR)
+	text = text.replace(/\bO5\b/g, IMG_OP)
+	text = text.replace(/\bO6\b/g, IMG_OD)
+
+	p.innerHTML = text
 	return p
 }
 

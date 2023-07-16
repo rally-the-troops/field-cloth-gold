@@ -24,47 +24,17 @@ main {
 	box-shadow: inset 0 0 8px #0008;
 }
 
-body.Observer #hand {
-	display: none;
-}
-
-.role_hand_size { float: right }
-
-.court, #hand, #darkness {
-	font-family: "Albert Text";
-	padding: 6px 10px;
-	text-align: right;
-	font-size: 20px;
-	color: #0004;
-}
-
-#darkness {
-	position: absolute;
-	right: -2px;
-	bottom: -2px;
-	color: #444;
-	text-shadow: 0 0 4px white;
-}
-
-#log { background-color: whitesmoke; }
-#log .h1 {
-	margin: 6px 0;
-	padding: 2px 8px;
-	border-top: 1px solid black;
-	border-bottom: 1px solid black;
-	background-color: hsl(0,0%,85%);
-}
-#log .h1.x { background-color: hsl(0,0%,85%); }
-#log .h1.gold { background-color: hsl(50,81%,79%); }
-#log .h1.blue { background-color: hsl(201,80%,67%); }
-#log .h1.white { background-color: hsl(0,0%,100%); }
-#log .h1.red { background-color: hsl(0,90%,69%); }
-#log .h1.purple { background-color: hsl(296,29%,65%); }
-#log .h1.r{background-image:linear-gradient(90deg,transparent 180px,#000 180px,#000 181px, hsl(359,85%,60%) 181px); }
-#log .h1.b{background-image:linear-gradient(90deg,transparent 180px,#000 180px,#000 181px, hsl(220,85%,60%) 181px); }
-
 #role_Red .role_name { background-color: hsl(359,100%,75%); }
 #role_Blue .role_name { background-color: hsl(220,100%,80%); }
+
+body.Observer #hand { display: none }
+.role_hand_size { float: right }
+
+.action {
+	cursor: pointer;
+}
+
+/* BOARD */
 
 #mapwrap {
 	width: 825px;
@@ -76,6 +46,14 @@ body.Observer #hand {
 	height: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px + 80px + 12px);
 }
 
+#hand, .court { height: 80px; }
+
+#court1 { top: 12px }
+#board { top: calc(12px + 80px + 12px) }
+#court2 { top: calc(12px + 80px + 12px + 638px + 12px) }
+#hand { top: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px) }
+#mapwrap { height: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px + 80px) }
+
 #board, #hand, .court {
 	box-sizing: border-box;
 	position: absolute;
@@ -85,9 +63,6 @@ body.Observer #hand {
 	box-shadow: 0 0 0 1px #222, 1px 1px 8px #0008;
 }
 
-#hand, .court {
-	height: 80px;
-}
 
 #board {
 	height: 638px;
@@ -95,31 +70,69 @@ body.Observer #hand {
 	background-position: center;
 	background-image: url(map75.jpg);
 	border-color: #fff8 #2228 #2228 #fff8;
+	background-image: url(map75.jpg)
 }
 
 @media (min-resolution: 97dpi) {
 	#board { background-image: url(map150.jpg) }
 }
 
-#court1 { top: 12px }
-#board { top: calc(12px + 80px + 12px) }
-#court2 { top: calc(12px + 80px + 12px + 638px + 12px) }
-#hand { top: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px) }
-#mapwrap { height: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px + 80px) }
-
-#hand, .court { background-color: hsl(0,0%,55%) }
+#hand { background-color: hsl(0,0%,50%) }
 .red.court { background-color: hsl(359,35%,55%) }
 .blue.court { background-color: hsl(220,35%,55%) }
 
-#map div {
+.court, #hand, #darkness_label {
+	font-family: "Albert Text";
+	padding: 6px 10px;
+	text-align: right;
+	font-size: 20px;
+	color: #0006;
+}
+
+#darkness_label {
 	position: absolute;
+	right: -2px;
+	bottom: -2px;
+	color: #444;
+	text-shadow: 0px -1px 10px white;
+}
+
+#darkness_button {
+	position: absolute;
+	width: 56px;
+	height: 56px;
+	left: 10px;
+	bottom: 10px;
+}
+
+#darkness_button.action {
+	background-color: #0002;
+	box-shadow: inset 0 0 16px 4px black, 0 0 0px 2px white, 0 0 8px 2px white;
+}
+
+.space {
+	position: absolute;
+	box-sizing: border-box;
+	border: 3px solid transparent;
+}
+
+.space.oval {
+	border-radius: 50%;
+}
+
+.space.action {
+	border: 3px solid white;
+	box-shadow: 0 0 4px white;
+}
+
+/* PIECES */
+
+.token, .tile {
+	position: absolute;
+	box-sizing: border-box;
 	transition-property: top, left;
 	transition-duration: 500ms;
 	transition-timing-function: ease;
-}
-
-.action {
-	cursor: pointer;
 }
 
 .token {
@@ -145,8 +158,11 @@ body.Observer #hand {
 		drop-shadow(0px -2px 0px yellow)
 }
 
+.token.white { background-image: url(images/token_white.svg) }
+.token.red { background-image: url(images/token_red.svg) }
+.token.blue { background-image: url(images/token_blue.svg) }
+
 .tile {
-	box-sizing: border-box;
 	width: 56px;
 	height: 56px;
 	background-repeat: no-repeat;
@@ -165,24 +181,6 @@ body.Observer #hand {
 	box-shadow: 0 0 0 1px #222, 0 0 0 4px yellow;
 }
 
-.space {
-	box-sizing: border-box;
-	border: 3px solid transparent;
-}
-
-.space.oval {
-	border-radius: 50%;
-}
-
-.space.action {
-	border: 3px solid white;
-	box-shadow: 0 0 4px white;
-}
-
-.token.white { background-image: url(images/token_white.svg) }
-.token.red { background-image: url(images/token_red.svg) }
-.token.blue { background-image: url(images/token_blue.svg) }
-
 .tile.gold { background-image: url(images/gold.png); background-color: hsl(50,81%,59%); }
 .tile.blue { background-image: url(images/blue.png); background-color: hsl(201,80%,47%); }
 .tile.white { background-image: url(images/white.png); background-color: hsl(0,0%,94%); }
@@ -194,22 +192,67 @@ body.Observer #hand {
 .tile.white { border-color: #ddd #bbb #bbb #ddd }
 .tile.green { border-color: #fff3 #0003 #0003 #fff3 }
 
+/* LOG */
+
+#log { background-color: whitesmoke; }
+
+#log .h1 {
+	margin: 6px 0;
+	padding: 2px 8px;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: hsl(0,0%,85%);
+}
+
+#log .h1.x { background-color: hsl(0,0%,85%); }
+#log .h1.r { background-color: hsl(359,85%,85%); }
+#log .h1.b { background-color: hsl(220,85%,85%); }
+
+#log .t, #log .c, #log .o {
+	display: inline-block;
+	vertical-align: -2px;
+	width: 11px;
+	height: 11px;
+	border: 1px solid #222;
+}
+
+#log .c { border-radius: 50%; }
+#log .o { border-radius: 0 0 50% 50%; }
+
+#log .c.white { background-color: hsl(0,0%,94%) }
+#log .c.red { background-color: hsl(359,85%,50%) }
+#log .c.blue { background-color: hsl(220,85%,55%) }
+
+#log .t.gold { background-color: hsl(50,81%,59%); }
+#log .t.blue { background-color: hsl(201,80%,47%); }
+#log .t.white { background-color: hsl(0,0%,94%); }
+#log .t.red { background-color: hsl(0,90%,49%); }
+#log .t.green {  background-color: hsl(125,21%,43%); }
+#log .t.black {  background-color: hsl(0,0%,35%); }
+
+#log .o.secrecy {  background-color: hsl(0,0%,35%); }
+#log .o.gold { background-color: hsl(50,81%,59%); }
+#log .o.blue { background-color: hsl(201,80%,47%); }
+#log .o.white { background-color: hsl(0,0%,94%); }
+#log .o.red { background-color: hsl(0,90%,49%); }
+#log .o.purple { background-color: hsl(296,29%,45%); }
+
 </style>
 </head>
 <body>
 
 <header>
 	<div id="toolbar">
-	<div class="menu">
-		<div class="menu_title"><img src="/images/cog.svg"></div>
-		<div class="menu_popup">
-			<a class="menu_item" href="info/rules.html" target="_blank">Rules</a>
-			<div class="resign menu_separator"></div>
-			<div class="resign menu_item" onclick="confirm_resign()">Resign</div>
+		<div class="menu">
+			<div class="menu_title"><img src="/images/cog.svg"></div>
+			<div class="menu_popup">
+				<a class="menu_item" href="info/rules.html" target="_blank">Rules</a>
+				<div class="resign menu_separator"></div>
+				<div class="resign menu_item" onclick="confirm_resign()">Resign</div>
+			</div>
 		</div>
-	</div>
-	<div class="icon_button" onclick="toggle_zoom()"><img src="/images/magnifying-glass.svg"></div>
-	<div class="icon_button" onclick="toggle_log()"><img src="/images/scroll-quill.svg"></div>
+		<div class="icon_button" onclick="toggle_zoom()"><img src="/images/magnifying-glass.svg"></div>
+		<div class="icon_button" onclick="toggle_log()"><img src="/images/scroll-quill.svg"></div>
 	</div>
 	<div id="prompt"></div>
 	<div id="actions"></div>
@@ -236,16 +279,17 @@ body.Observer #hand {
 </aside>
 
 <main>
-
-<div id="mapwrap" class="fit">
-<div id="map">
-<div id="court1" class="court">Rival Court</div>
-<div id="board"><div id="darkness"></div></div>
-<div id="court2" class="court">Court</div>
-<div id="hand">Hand</div>
-</div>
-</div>
-
+	<div id="mapwrap" class="fit">
+		<div id="map">
+			<div id="court1" class="red court">Rival Court</div>
+			<div id="board">
+				<div id="darkness_button"></div>
+				<div id="darkness_label"></div>
+			</div>
+			<div id="court2" class="blue court">Court</div>
+			<div id="hand">Hand</div>
+		</div>
+	</div>
 </main>
 
 <footer id="status"></footer>
