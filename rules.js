@@ -320,30 +320,28 @@ function gift_tile_in_space(to) {
 	}
 }
 
-function score_own_points(n) {
+function score_points(who, n) {
 	if (n > 0) {
 		if (n === 1)
-			log("Scored " + count_name(n) + " point.")
+			log(who + " scored " + count_name(n) + " point.")
 		else
-			log("Scored " + count_name(n) + " points.")
-		if (game.active === RED)
+			log(who + " scored " + count_name(n) + " points.")
+		if (who === RED)
 			game.red_score += n
-		if (game.active === BLUE)
+		if (who === BLUE)
 			game.blue_score += n
 	}
 }
 
+function score_own_points(n) {
+	score_points(game.active, n)
+}
+
 function score_rival_points(n) {
-	if (n > 0) {
-		if (n === 1)
-			log("Rival scored " + count_name(n) + " point.")
-		else
-			log("Rival scored " + count_name(n) + " points.")
-		if (game.active === RED)
-			game.blue_score += n
-		if (game.active === BLUE)
-			game.red_score += n
-	}
+	if (game.active === RED)
+		score_points(BLUE, n)
+	else
+		score_points(RED, n)
 }
 
 function count_tiles(list, type) {
@@ -897,7 +895,7 @@ function goto_tournaments_remove_own() {
 	if (can_remove_tiles_from_court(TILE_RED))
 		game.state = "tournaments_remove_own"
 	else
-		goto_tournaments_remove_rival()
+		goto_tournaments_score_rival()
 }
 
 function goto_tournaments_score_rival() {
