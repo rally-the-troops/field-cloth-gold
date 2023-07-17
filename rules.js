@@ -45,28 +45,6 @@ const TILE_RED = 36
 const TILE_GREEN = 48
 const TILE_UNKNOWN = 60
 
-const COUNT_NAME = [
-	"no",
-	"one",
-	"two",
-	"three",
-	"four",
-	"five",
-	"six",
-	"seven",
-	"eight",
-	"nine",
-	"ten",
-	"eleven",
-	"twelve",
-]
-
-function count_name(n) {
-	if (n > 12)
-		return String(n)
-	return COUNT_NAME[n]
-}
-
 function space_name(s) {
 	switch (s) {
 	case S_DRAGON_1: return "Dragon"
@@ -79,12 +57,6 @@ function space_name(s) {
 	default: return "off board"
 	}
 }
-
-const XTILE_NAME_UC = [ "Gold", "Blue", "White", "Red", "Green" ]
-const XTILE_NAME_LC = [ "gold", "blue", "white", "red", "green" ]
-
-const TILE_NAME_UC = [ "Cloth", "Beasts", "Piety", "Tournaments", "Jewels" ]
-const TILE_NAME_LC = [ "cloth", "beasts", "piety", "tournaments", "jewels" ]
 
 const TILE_NAME_CODE = [ "G", "B", "W", "R", "J", "K" ]
 const TILE_NAME_CODE_X = [ [], [], [], [], [], [] ]
@@ -294,12 +266,6 @@ exports.setup = function (seed, scenario, options) {
 }
 
 // === HANDS AND COURTS ===
-
-function rival_name() {
-	if (game.active === RED)
-		return BLUE
-	return RED
-}
 
 function rival_court() {
 	if (game.active === RED)
