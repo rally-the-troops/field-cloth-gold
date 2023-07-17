@@ -426,42 +426,6 @@ function remove_tile_from_rival_court(tile) {
 	array_remove_item(rival_court(), tile)
 }
 
-function reveal_tiles_into_court(tile) {
-	let hand = own_hand()
-	let court = own_court()
-	tile = tile_type(tile)
-	for (let i = 0; i < hand.length; ) {
-		if (tile_type(hand[i]) === tile) {
-			court.push(hand[i])
-			array_remove(hand, i)
-		} else {
-			++i
-		}
-	}
-}
-
-function remove_tiles_from_court(tile) {
-	tile = tile_type(tile)
-	let court = own_court()
-	for (let i = 0; i < court.length; ) {
-		if (tile_type(court[i]) === tile)
-			array_remove(court, i)
-		else
-			++i
-	}
-}
-
-function remove_tiles_from_rival_court(tile) {
-	tile = tile_type(tile)
-	let court = rival_court()
-	for (let i = 0; i < court.length; ) {
-		if (tile_type(court[i]) === tile)
-			array_remove(court, i)
-		else
-			++i
-	}
-}
-
 // === FLOW OF PLAY ===
 
 states.move_token = {
@@ -718,7 +682,7 @@ states.cloth_of_gold_reveal = {
 		gen_reveal_tiles_into_court(TILE_GOLD)
 	},
 	tile(tile) {
-		reveal_tiles_into_court(tile)
+		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_GOLD))
 			goto_cloth_of_gold_score()
 	},
@@ -779,7 +743,7 @@ states.banquets_and_feasts_reveal = {
 		gen_reveal_tiles_into_court(TILE_BLUE)
 	},
 	tile(tile) {
-		reveal_tiles_into_court(tile)
+		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_BLUE))
 			goto_banquets_and_feasts_score()
 	},
@@ -806,7 +770,7 @@ states.banquets_and_feasts_remove = {
 		gen_remove_tiles_from_court(TILE_BLUE)
 	},
 	tile(tile) {
-		remove_tiles_from_court(tile)
+		remove_tile_from_court(tile)
 		if (!can_remove_tiles_from_court(TILE_BLUE))
 			end_turn()
 	},
@@ -848,7 +812,7 @@ states.godliness_and_piety_reveal = {
 		gen_reveal_tiles_into_court(TILE_WHITE)
 	},
 	tile(tile) {
-		reveal_tiles_into_court(tile)
+		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_WHITE))
 			goto_godliness_and_piety_score()
 	},
@@ -876,7 +840,7 @@ states.godliness_and_piety_remove = {
 		gen_remove_tiles_from_court(TILE_WHITE)
 	},
 	tile(tile) {
-		remove_tiles_from_court(tile)
+		remove_tile_from_court(tile)
 		if (!can_remove_tiles_from_court(TILE_WHITE))
 			end_turn()
 	},
@@ -937,7 +901,7 @@ states.tournaments_reveal = {
 		gen_reveal_tiles_into_court(TILE_RED)
 	},
 	tile(tile) {
-		reveal_tiles_into_court(tile)
+		reveal_tile_into_court(tile)
 		if (!can_reveal_tiles_into_court(TILE_RED))
 			goto_tournaments_score_own()
 	},
@@ -965,7 +929,7 @@ states.tournaments_remove_own = {
 		gen_remove_tiles_from_court(TILE_RED)
 	},
 	tile(tile) {
-		remove_tiles_from_court(tile)
+		remove_tile_from_court(tile)
 		if (!can_remove_tiles_from_court(TILE_RED))
 			goto_tournaments_score_rival()
 	},
@@ -992,7 +956,7 @@ states.tournaments_remove_rival = {
 		gen_remove_tiles_from_rival_courts(TILE_RED)
 	},
 	tile(tile) {
-		remove_tiles_from_rival_court(tile)
+		remove_tile_from_rival_court(tile)
 		if (!can_remove_tiles_from_rival_court(TILE_RED))
 			game.state = "tournaments_secrecy"
 	},
@@ -1049,7 +1013,7 @@ states.collections_reveal = {
 			gen_action_tile(tile)
 	},
 	tile(tile) {
-		reveal_tiles_into_court(tile)
+		reveal_tile_into_court(tile)
 		if (own_hand().length === 0)
 			goto_collections_score()
 	},
