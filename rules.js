@@ -322,7 +322,7 @@ function gift_tile_in_space(to) {
 
 function score_points(who, n, reason = ".") {
 	if (n > 0) {
-		log(who + " scored +" + n + reason)
+		log(who + " scores +" + n + reason)
 		if (who === RED)
 			game.red_score += n
 		else
@@ -429,7 +429,7 @@ function remove_tile_from_rival_court(tile) {
 // === FLOW OF PLAY ===
 
 states.move_token = {
-	inactive: "to move one of their tokens",
+	inactive: "to move one of their tokens to an oval space",
 	prompt() {
 		view.prompt = "Move one of your tokens to an oval space."
 		if (game.active === RED) {
@@ -460,7 +460,7 @@ states.move_token = {
 }
 
 states.move_token_to = {
-	inactive: "to move one of their tokens",
+	inactive: "to move one of their tokens to an oval space",
 	prompt() {
 		view.prompt = "Move one of your tokens to an oval space."
 		view.selected_token = game.selected_token
@@ -530,9 +530,9 @@ function end_turn() {
 }
 
 states.return_dragon = {
-	inactive: "End of Turn",
+	inactive: "to move the Dragon back to its space",
 	prompt() {
-		view.prompt = "End of Turn Move the Dragon back to its space."
+		view.prompt = "Move the Dragon back to its space."
 		gen_action_token(TOKEN_DRAGON)
 	},
 	token(_) {
@@ -557,9 +557,9 @@ function goto_refill_tiles() {
 }
 
 states.refill_tiles = {
-	inactive: "End of Turn",
+	inactive: "to draw and place a new tile",
 	prompt() {
-		view.prompt = "End of Turn: Draw and place a new tile."
+		view.prompt = "Draw and place a new tile."
 		for (let i = FIRST_SPACE; i <= LAST_TILE_SPACE; ++i)
 			if (is_oval_space_empty(i) && game.squares[i] === TILE_NONE)
 				gen_action_square(i)
@@ -595,7 +595,7 @@ function goto_dragon() {
 states.dragon_1 = {
 	inactive: "Dragon",
 	prompt() {
-		view.prompt = "Dragon: Move the Dragon to an empty oval space."
+		view.prompt = "Dragon: Move the Dragon to an oval space."
 		gen_action_token(TOKEN_DRAGON)
 	},
 	token(_) {
@@ -606,7 +606,7 @@ states.dragon_1 = {
 states.dragon_2 = {
 	inactive: "Dragon",
 	prompt() {
-		view.prompt = "Dragon: Move the Dragon to an empty oval space."
+		view.prompt = "Dragon: Move the Dragon to an oval space."
 		view.selected_token = TOKEN_DRAGON
 		for (let i = FIRST_SPACE; i <= LAST_OVAL_SPACE; ++i)
 			if (i !== game.from && is_oval_space_empty(i))
@@ -1138,17 +1138,22 @@ states.end_of_the_contest_gold_2 = {
 
 function victory_check(red, blue) {
 	if (red > blue)
-		return goto_game_over(RED, RED + " is the winner with " + game.red_score + " points!")
+		return goto_game_over(RED, RED + " wins the game!")
 	if (blue > red)
-		return goto_game_over(BLUE, BLUE + " is the winner with " + game.blue_score + " points!")
+		return goto_game_over(BLUE, BLUE + " wins the game!")
 	return true
 }
 
 function goto_victory() {
+
+	log("")
+	log(RED + " achieves a score of " + game.red_score + ".")
+	log(BLUE + " achieves a score of " + game.blue_score + ".")
+
 	if (victory_check(game.red_score, game.blue_score))
 		if (victory_check(count_tiles(game.red_court, TILE_WHITE), count_tiles(game.blue_court, TILE_WHITE)))
 			if (victory_check(game.red_court.length), game.blue_court.length)
-				goto_game_over("Shared", "The two majesties do share victory.")
+				goto_game_over("Shared", "The two majesties do share victory!")
 }
 
 // === COMMON LIBRARY ===
