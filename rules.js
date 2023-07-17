@@ -589,21 +589,10 @@ function pass_play_to_rival() {
 // === THE ACTIONS: DRAGON ===
 
 function goto_dragon() {
-	game.state = "dragon_1"
+	game.state = "dragon"
 }
 
-states.dragon_1 = {
-	inactive: "Dragon",
-	prompt() {
-		view.prompt = "Dragon: Move the Dragon to an oval space."
-		gen_action_token(TOKEN_DRAGON)
-	},
-	token(_) {
-		game.state = "dragon_2"
-	},
-}
-
-states.dragon_2 = {
+states.dragon = {
 	inactive: "Dragon",
 	prompt() {
 		view.prompt = "Dragon: Move the Dragon to an oval space."
