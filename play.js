@@ -2,6 +2,20 @@
 
 /* global view, player, send_action, action_button, scroll_with_middle_mouse */
 
+let opt_sort_tiles = window.localStorage['field-cloth-gold/sort'] | 0
+check_menu("sort_tiles_menu", opt_sort_tiles === 1)
+
+function check_menu(id, x) {
+        document.getElementById(id).className = x ? "menu_item checked" : "menu_item unchecked"
+}
+
+function toggle_sort() {
+	opt_sort_tiles = 1 - opt_sort_tiles
+	check_menu("sort_tiles_menu", opt_sort_tiles === 1)
+	window.localStorage['field-cloth-gold/sort'] = opt_sort_tiles
+	on_update()
+}
+
 const TILE_NONE = -1
 const TILE_GOLD = 0
 const TILE_BLUE = 12
@@ -171,6 +185,12 @@ function on_init() {
 		ui.tiles[i] = create_item({ className: "tile green", my_action: "tile", my_id: i })
 }
 
+function cmp_tile(a, b) {
+	a = ((a / 12 | 0) + 1) % 5
+	b = ((b / 12 | 0) + 1) % 5
+	return a - b
+}
+
 function on_update() {
 	on_init()
 
@@ -180,8 +200,17 @@ function on_update() {
 
 	ui.darkness_button.classList.toggle("action", is_action("darkness"))
 
+	let hand = view.hand
+	let red_court = view.red_court
+	let blue_court = view.blue_court
+	if (opt_sort_tiles) {
+		hand = hand.slice().sort(cmp_tile)
+		red_court = red_court.slice().sort(cmp_tile)
+		blue_court = blue_court.slice().sort(cmp_tile)
+	}
+
 	for (let i = 0; i < 54; ++i) {
-		if ((view.hand && view.hand.includes(i)) || view.red_court.includes(i) || view.blue_court.includes(i) || view.squares.includes(i)) {
+		if ((hand && hand.includes(i)) || red_court.includes(i) || blue_court.includes(i) || view.squares.includes(i)) {
 			ui.tiles[i].style.opacity = 1
 			ui.tile_was_visible[i] = 1
 		} else {
@@ -221,13 +250,13 @@ function on_update() {
 	if (player !== "Blue") {
 		ui.court1.className = "blue court"
 		ui.court2.className = "red court"
-		court1 = view.blue_court
-		court2 = view.red_court
+		court1 = blue_court
+		court2 = red_court
 	} else {
 		ui.court1.className = "red court"
 		ui.court2.className = "blue court"
-		court1 = view.red_court
-		court2 = view.blue_court
+		court1 = red_court
+		court2 = blue_court
 	}
 
 	let tile_space = calc_tile_spacing(court1.length)
@@ -250,10 +279,10 @@ function on_update() {
 		ui.tiles[k].style.zIndex = i
 	}
 
-	if (view.hand) {
-		tile_space = calc_tile_spacing(view.hand.length)
-		for (let i = 0; i < view.hand.length; ++i) {
-			let k = view.hand[i]
+	if (hand) {
+		tile_space = calc_tile_spacing(hand.length)
+		for (let i = 0; i < hand.length; ++i) {
+			let k = hand[i]
 			let x = HAND_X + tile_space * i
 			let y = HAND_Y
 			ui.tiles[k].style.left = x + "px"

@@ -12,10 +12,7 @@
 <script defer src="play.js"></script>
 <style>
 
-@font-face{
-	font-family: "Albert Text";
-	src: url('fonts/AlbertText-Bold.woff2') format('woff2');
-}
+@font-face { font-family: "Albert Text"; src: url('fonts/AlbertText-Bold.woff2') format('woff2') }
 
 main {
 	user-select: none;
@@ -30,9 +27,9 @@ main {
 body.Observer #hand { display: none }
 .role_hand_size { float: right }
 
-.action {
-	cursor: pointer;
-}
+.checked::before { content: "\2714  " }
+.unchecked::before { content: "\2714  "; color: transparent; }
+.action { cursor: pointer; }
 
 /* BOARD */
 
@@ -244,6 +241,8 @@ body.Observer #hand { display: none }
 			<div class="menu_title"><img src="/images/cog.svg"></div>
 			<div class="menu_popup">
 				<a class="menu_item" href="info/rules.html" target="_blank">Rules</a>
+				<div class="menu_separator"></div>
+				<div id="sort_tiles_menu" class="menu_item unchecked" onclick="toggle_sort()">Sort tiles</div>
 				<div class="resign menu_separator"></div>
 				<div class="resign menu_item" onclick="confirm_resign()">Resign</div>
 			</div>
