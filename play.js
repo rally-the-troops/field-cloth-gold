@@ -204,7 +204,8 @@ function on_update() {
 	let red_court = view.red_court
 	let blue_court = view.blue_court
 	if (opt_sort_tiles) {
-		hand = hand.slice().sort(cmp_tile)
+		if (hand)
+			hand = hand.slice().sort(cmp_tile)
 		red_court = red_court.slice().sort(cmp_tile)
 		blue_court = blue_court.slice().sort(cmp_tile)
 	}
