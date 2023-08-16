@@ -1141,7 +1141,7 @@ function goto_victory() {
 
 	if (victory_check(game.red_score, game.blue_score))
 		if (victory_check(count_tiles(game.red_court, TILE_WHITE), count_tiles(game.blue_court, TILE_WHITE)))
-			if (victory_check(game.red_court.length), game.blue_court.length)
+			if (victory_check(game.red_court.length, game.blue_court.length))
 				goto_game_over("Shared", "The two majesties do share victory!")
 }
 
