@@ -146,7 +146,7 @@ exports.action = function (state, player, action, arg) {
 	return game
 }
 
-exports.view = function(state, player) {
+exports.view = function (state, player) {
 	game = state
 
 	view = {
@@ -186,7 +186,7 @@ exports.view = function(state, player) {
 			view.actions.undo = 0
 	}
 
-	return view;
+	return view
 }
 
 exports.resign = function (state, player) {
