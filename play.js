@@ -388,5 +388,3 @@ function on_log(text) {
 	p.innerHTML = text
 	return p
 }
-
-scroll_with_middle_mouse("main")

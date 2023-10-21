@@ -34,14 +34,10 @@ body.Observer #hand { display: none }
 
 /* BOARD */
 
-#mapwrap {
-	width: 825px;
-	margin: 0px auto;
-}
-
 #map {
 	width: 825px;
 	height: calc(12px + 80px + 12px + 638px + 12px + 80px + 12px + 80px + 12px);
+	margin: 0px auto;
 }
 
 #hand, .court { height: 80px; }
@@ -272,16 +268,14 @@ body.Observer #hand { display: none }
 </aside>
 
 <main data-min-zoom="1" data-max-zoom="1">
-	<div id="mapwrap">
-		<div id="map">
-			<div id="court1" class="red court">Rival Court</div>
-			<div id="board">
-				<div id="darkness_button"></div>
-				<div id="darkness_label"></div>
-			</div>
-			<div id="court2" class="blue court">Court</div>
-			<div id="hand">Hand</div>
+	<div id="map">
+		<div id="court1" class="red court">Rival Court</div>
+		<div id="board">
+			<div id="darkness_button"></div>
+			<div id="darkness_label"></div>
 		</div>
+		<div id="court2" class="blue court">Court</div>
+		<div id="hand">Hand</div>
 	</div>
 </main>
 
