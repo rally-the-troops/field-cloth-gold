@@ -22,11 +22,10 @@ main {
 	box-shadow: inset 0 0 8px #0008;
 }
 
-#role_Red .role_name { background-color: hsl(359,100%,75%); }
-#role_Blue .role_name { background-color: hsl(220,100%,80%); }
+#role_Red { background-color: hsl(359,100%,75%); }
+#role_Blue { background-color: hsl(220,100%,80%); }
 
 body.Observer #hand { display: none }
-.role_hand_size { float: right }
 
 .checked::before { content: "\2714  " }
 .unchecked::before { content: "\2714  "; color: transparent; }
@@ -250,18 +249,14 @@ body.Observer #hand { display: none }
 <aside>
 	<div id="roles">
 		<div class="role" id="role_Red">
-			<div class="role_name">
-				Red
-				<div class="role_hand_size" id="red_hand_size"></div>
-				<div class="role_user"></div>
-			</div>
+			<div class="role_name">Red</div>
+			<div class="role_stat" id="red_hand_size"></div>
+			<div class="role_user"></div>
 		</div>
 		<div class="role" id="role_Blue">
-			<div class="role_name">
-				Blue
-				<div class="role_hand_size" id="blue_hand_size"></div>
-				<div class="role_user"></div>
-			</div>
+			<div class="role_name">Blue</div>
+			<div class="role_stat" id="blue_hand_size"></div>
+			<div class="role_user"></div>
 		</div>
 	</div>
 	<div id="log"></div>
