@@ -189,17 +189,6 @@ exports.view = function (state, player) {
 	return view
 }
 
-exports.resign = function (state, player) {
-	game = state
-	if (game.state !== 'game_over') {
-		if (player === RED)
-			goto_game_over(BLUE, RED + " resigned.")
-		if (player === BLUE)
-			goto_game_over(RED, BLUE + " resigned.")
-	}
-	return game
-}
-
 function goto_game_over(result, victory) {
 	game.state = "game_over"
 	game.active = "None"
